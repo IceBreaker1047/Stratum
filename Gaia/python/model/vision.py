@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from PIL import Image, ImageOps
 import torchvision.transforms as transforms
+from torchvision import models
 
 device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
 print(f"Using {device} device")
@@ -26,50 +27,26 @@ def ImagePreprocessor(image_path, target_size=112):
     return final_tesnor
 
 class VisionEncoder(nn.Module):
-    def __init__(self, embedding_dim=256):
+    def __init__(self, embedding_dim=256,freeze_weights=True):
         super().__init__()
 
-        self.conv1 = nn.Conv2d(in_channels=3,out_channels=16,kernel_size=3,padding=1)
-        self.relu1 = nn.ReLU()
-        self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.backbone = models.mobilenet_v3_small(weights='DEFAULT')
+        self.backbone.classifier = nn.Identity()
+        self.projection = nn.Linear(576, embedding_dim)
 
-        self.conv2 = nn.Conv2d(in_channels=16,out_channels=32,kernel_size=3,padding=1)
-        self.relu2 = nn.ReLU()
-        self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
-
-        self.conv3 = nn.Conv2d(in_channels=32,out_channels=64,kernel_size=3,padding=1)
-        self.relu3 = nn.ReLU()
-        self.pool3 = nn.MaxPool2d(kernel_size=2, stride=2)
-
-        self.conv4 = nn.Conv2d(in_channels=64,out_channels=128,kernel_size=3,padding=1)
-        self.relu4 = nn.ReLU()
-        self.pool4 = nn.MaxPool2d(kernel_size=2, stride=2)
-
-        self.flatten = nn.Flatten()
-        self.projection = nn.Linear(128*7*7,embedding_dim)
+        if freeze_weights:
+            for param in self.backbone.parameters():
+                param.requires_grad = False
 
     def forward(self,x):
-        x = self.pool1(self.relu1(self.conv1(x)))
-        x = self.pool2(self.relu2(self.conv2(x)))
-        x = self.pool3(self.relu3(self.conv3(x)))
-        x = self.pool4(self.relu4(self.conv4(x)))
-
-        x = self.flatten(x)
+        x = self.backbone(x)
         x = self.projection(x)
 
         return x
     
 if __name__ == "__main__":
-    print("Starting vision encoding...")
+    print("Initializing smart vision encoder...")
     model = VisionEncoder(embedding_dim=256)
 
-    print("Preprocessing Image...")
-    img_path = "Gaia/python/test_imgs/1.png"
-    img_tensor = ImagePreprocessor(img_path,target_size=112)
-
-    print("Passing image through neural net...")
-    model = VisionEncoder(embedding_dim=256)
-    output = model(img_tensor)
-
-    print(f"Output shape: {output.shape}")
-    print(f"Output: {output}") 
+    print("Preprocessing the images...")
+    
