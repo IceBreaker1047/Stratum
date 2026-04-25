@@ -1,6 +1,7 @@
 from collections import Counter
 import pymupdf
 import json
+import re
 
 def create_header_mapping(all_font_sizes: list) -> tuple[dict,float]:
     if not all_font_sizes:
@@ -76,6 +77,9 @@ def markdown_chunk(markdown_text:str, max_chars:int, overlap_chars:int)->list:
             continue
 
         if "|" in para:
+            while re.search(r'\|\s*\|', para):
+                para = re.sub(r'\|\s*\|', '|', para)
+
             if header_buffer:
                 glued_headers = "\n".join(header_buffer)
                 para = f"{glued_headers}\n{para}"
