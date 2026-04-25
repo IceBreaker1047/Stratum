@@ -42,13 +42,24 @@ def extract_markdown(document_elemts:list)->str:
 
     return final_markdown_string
 
-#Current chunking is based on font size 
+def check_column_header(text:str) -> bool:
+    text = text.strip()
+
+    if len(text)>80:
+        return False
+    if text.endswith('.'):
+        return False
+    
+    return True
+
 def markdown_chunk(markdown_text:str, max_chars:int, overlap_chars:int)->list:
     raw_paragraphs = markdown_text.split("\n\n")
     chunks = []
     current_h1 = "Document Start"
     current_h2 = ""
     current_chunk_text = ""
+
+    header_buffer = []
 
     for para in raw_paragraphs:
         para = para.strip()
@@ -57,23 +68,49 @@ def markdown_chunk(markdown_text:str, max_chars:int, overlap_chars:int)->list:
         if para.startswith("# "):
             current_h1 = para.replace("# ","").strip()
             current_h2 = ""
+            current_chunk_text += f"\n\n{para}\n\n"
             continue
         elif para.startswith("## "):
             current_h2 = para.replace("## ","").strip()
+            current_chunk_text += f"\n\n{para}\n\n"
             continue
-        
-        if len(current_chunk_text) + len(para) > max_chars and current_chunk_text:
-            chunks.append({
-                "h1_context": current_h1,
-                "h2_context": current_h2,
-                "content": f"{current_h1} - {current_h2} \n {current_chunk_text.strip()}"
-            })
-            overlap_text = current_chunk_text[-overlap_chars:]
-            overlap_text = overlap_text.split(" ", 1)[-1] if " " in overlap_text else overlap_text
-            current_chunk_text = f"...{overlap_text}\n\n{para}\n\n"
-        else:
-            current_chunk_text+=f"{para}\n\n"
 
+        if "|" in para:
+            if header_buffer:
+                glued_headers = "\n".join(header_buffer)
+                para = f"{glued_headers}\n{para}"
+                header_buffer = [] 
+            current_chunk_text += f"{para}\n\n"
+
+            if len(current_chunk_text) > max_chars:
+                chunks.append({
+                    "h1_context": current_h1,
+                    "h2_context": current_h2,
+                    "content": f"{current_h1} - {current_h2} \n {current_chunk_text.strip()}"
+                })
+                current_chunk_text = ""
+        elif check_column_header(para):
+            header_buffer.append(para) 
+        else:
+            if header_buffer:
+                current_chunk_text += "\n\n".join(header_buffer) + "\n\n"
+                header_buffer = []
+            current_chunk_text += f"{para}\n\n"
+
+            if len(current_chunk_text) > max_chars:
+                chunks.append({
+                    "h1_context": current_h1,
+                    "h2_context": current_h2,
+                    "content": f"{current_h1} - {current_h2} \n {current_chunk_text.strip()}"
+                })
+                
+                overlap_text = current_chunk_text[-overlap_chars:]
+                overlap_text = overlap_text.split(" ", 1)[-1] if " " in overlap_text else overlap_text
+                current_chunk_text = f"...{overlap_text}\n\n"
+
+    if header_buffer:
+        current_chunk_text += "\n\n".join(header_buffer) + "\n\n"
+    
     if current_chunk_text.strip():
         chunks.append({
             "h1_context": current_h1,

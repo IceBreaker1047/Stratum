@@ -1,6 +1,6 @@
 import pymupdf
 import re
-from images_charts import extract_tables
+from table import extract_tables
 
 def get_page_elements(page):
     elements = []
