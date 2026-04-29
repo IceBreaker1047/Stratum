@@ -3,6 +3,7 @@ import pymupdf
 import json
 import re
 
+# Assign the text # or ## according to the text size
 def create_header_mapping(all_font_sizes: list) -> tuple[dict,float]:
     if not all_font_sizes:
         return {},0.0
@@ -20,6 +21,7 @@ def create_header_mapping(all_font_sizes: list) -> tuple[dict,float]:
 
     return header_mapping, baseline_size
 
+#Updates the context by looking at # and ##
 def extract_markdown(document_elemts:list)->str:
     if not document_elemts:
         return ""
@@ -32,10 +34,20 @@ def extract_markdown(document_elemts:list)->str:
     for element in document_elemts:
         size = element["size"]
         text = element["text"]
+
+        is_bold = element.get("is_bold",False)
+        is_upper = element.get("is_upper",False)
         
         if size in header_mapping:
             markdown_tag = header_mapping[size]
             markdown_lines.append(f"{markdown_tag} {text}")
+        elif size == baseline_size and (is_bold or is_upper):
+            if len(text) > 80 or text.endswith(('.',':',';',',')):
+                markdown_lines.append(text)
+            elif is_bold and is_upper:
+                markdown_lines.append(f'# {text}')
+            else:
+                markdown_lines.append(f'## {text}')
         else:
             markdown_lines.append(text)
 
@@ -43,6 +55,7 @@ def extract_markdown(document_elemts:list)->str:
 
     return final_markdown_string
 
+#Extra check for checking column headers in a table
 def check_column_header(text:str) -> bool:
     text = text.strip()
 

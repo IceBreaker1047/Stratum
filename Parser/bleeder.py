@@ -13,40 +13,52 @@ def get_page_elements(page):
     for block in page_dict["blocks"]:
         if block["type"] != 0: continue 
         
-        block_bbox = block["bbox"]
-        is_inside_table = False
-        for t in tables:
-            t_box = t["bbox"]
-            if (block_bbox[0] >= t_box[0] - 5 and block_bbox[1] >= t_box[1] - 5 and 
-                block_bbox[2] <= t_box[2] + 5 and block_bbox[3] <= t_box[3] + 5):
-                is_inside_table = True
-                break
-                
-        if is_inside_table:
-            continue
-
-        block_text = ""
-        max_font_size = 0
-        
+        # We still check if the overall block/line is in a table
         for line in block["lines"]:
+            line_bbox = line["bbox"]
+            is_inside_table = False
+            
+            for t in tables:
+                t_box = t["bbox"]
+                if (line_bbox[0] >= t_box[0] - 5 and line_bbox[1] >= t_box[1] - 5 and 
+                    line_bbox[2] <= t_box[2] + 5 and line_bbox[3] <= t_box[3] + 5):
+                    is_inside_table = True
+                    break
+                    
+            if is_inside_table:
+                continue
+
+            line_text = ""
+            max_font_size = 0
+
+            is_bold = False
+            
+            # Process span by span, but append at the LINE level
             for span in line["spans"]:
                 text = span["text"].strip()
                 if not text: continue
                 
                 font_size = round(span["size"], 1)
-                block_text += text + " "
+                line_text += text + " "
                 if font_size > max_font_size: 
                     max_font_size = font_size
+                
+                #Check if the font is bold for parsing context
+                font_name = span.get("font","").lower()
+                if(span["flags"]&16) or "bold" in font_name or "heavy" in font_name:
+                    is_bold = True
                     
-        block_text = block_text.strip()
-        if block_text:
-            elements.append({
-                "text": block_text,
-                "size": max_font_size,
-                "y0": block["bbox"][1],
-                "y1": block["bbox"][3],
-                "is_table": False
-            })
+            line_text = line_text.strip()
+            if line_text:
+                elements.append({
+                    "text": line_text,
+                    "size": max_font_size,
+                    "is_bold": is_bold,
+                    "is_upper": line_text.isupper() and len(line_text)>4,
+                    "y0": line["bbox"][1], # Use LINE coordinates, not block
+                    "y1": line["bbox"][3],
+                    "is_table": False
+                })
             
     elements.sort(key=lambda el: el.get("y0", el.get("bbox", [0,0])[1]))
     
@@ -98,7 +110,9 @@ def extract_without_bleeds(pdf_path):
             if el.get("is_table"):
                 document_elements.append({
                     "text": el["text"],
-                    "size": el["size"]
+                    "size": el["size"],
+                    "is_bold": el.get("is_bold",False),
+                    "is_upper": el.get("is_upper",False)
                 })
                 continue
 
@@ -120,7 +134,9 @@ def extract_without_bleeds(pdf_path):
             # Send clean data to the chunker
             document_elements.append({
                 "text": clean_text,
-                "size": el["size"]
+                "size": el["size"],
+                "is_bold": el.get("is_bold",False),
+                "is_upper": el.get("is_upper",False)
             })
 
     print(f"Bleeder: Blacklisted {len(bleed_blacklist)} items & filtered page numbers. Extracted {len(document_elements)} clean blocks.")

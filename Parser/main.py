@@ -21,7 +21,7 @@ def process_pdf_to_database(pdf_path:str, output_json_path:str):
     print("--- Pipeline Completed ---")
 
 if __name__ == "__main__":
-    pdf_file = "Sample_PDFs/Financial_Statement.pdf"
+    pdf_file = "Sample_PDFs/google.pdf"
     json_output = "final_database_chunks.json"
     
     process_pdf_to_database(pdf_file, json_output)
