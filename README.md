@@ -9,11 +9,10 @@ Stratum is a high-fidelity PDF parsing API designed for ML engineers building RA
 - **Layout-aware extraction** — Detects single vs. multi-column layouts and sorts elements accordingly
 - **Bleed/header filtering** — Automatically detects and strips repeated headers, footers, and page numbers across the document
 - **Table extraction** — Parses tables with rowspan/colspan support; outputs HTML, structured JSON rows, and Markdown
-- **Image passthrough** — Captures image bytes per block for downstream multimodal processing
-- **Hierarchical chunking** — Two chunking strategies available: flat Markdown chunking and semantic tree construction
-- **Context injection** — Every chunk carries `h1_context` / `h2_context` so retrievers know where in the document a chunk came from
+- **Image captioning** — On-device ViT-GPT2 model generates captions for embedded images; no external API required
+- **Semantic tree chunking** — Builds a heading hierarchy from font and spatial heuristics, bonds captions to figures/tables, and injects hierarchical context into every chunk
+- **Context injection** — Every chunk carries heading breadcrumbs so retrievers know exactly where in the document a chunk came from
 - **Unified chunk schema** — All chunk types (text, table, image, caption) share the same output fields
-- **Configurable overlap** — Sliding overlap between text chunks with heading-safe carry-over
 - **REST API** — FastAPI server with a single `/parse-pdf` endpoint
 
 ---
@@ -24,22 +23,37 @@ Stratum is a high-fidelity PDF parsing API designed for ML engineers building RA
 PDF File
    │
    ▼
-extract_without_bleeds()       # pymupdf — extracts text, images, tables; strips repeated margin content
+extract_without_bleeds()
+   Extracts text lines, images, and tables page-by-page.
+   Pass 1: identifies repeated margin content (headers/footers/page numbers).
+   Pass 2: returns clean elements with bleed content stripped.
    │
    ▼
-get_page_elements()            # Per-page: detects tables, images, text lines; applies bold/italic/superscript markers
+get_page_elements()
+   Per-page element builder. Detects tables via PyMuPDF, extracts images,
+   annotates text spans with bold/italic/superscript markers, and sorts
+   elements by reading order (column-aware).
    │
    ▼
-   ├── extract_markdown()      # Flat pipeline: maps font sizes → heading levels, produces Markdown blocks
-   │       │
-   │       └── markdown_chunk()   # Splits into chunks with overlap; flushes on heading boundaries
+construct_semantic_tree()
+   Builds a heading hierarchy from font-size heuristics, centering,
+   boldness, and structural patterns (e.g. "1.2 Heading", "A. Section").
+   Outputs a root node with nested heading → paragraph → list_item children.
    │
-   └── construct_semantic_tree()  # Tree pipeline: builds heading hierarchy, bonds captions to tables/images
-           │
-           └── flatten_tree_to_chunks()   # Merges adjacent nodes, injects context prefixes, enforces target size
+   ▼
+flatten_tree_to_chunks()
+   Walks the tree depth-first. Merges adjacent same-type nodes, bonds
+   captions to the table/image that follows, injects heading breadcrumbs
+   as context prefixes, and enforces a target chunk size.
+   │
+   ▼
+ImageCaptioner.describe_image()   (called on image chunks)
+   Singleton ViT-GPT2 model. Replaces the "[IMAGE MULTIMODAL DESCRIPTION PENDING]"
+   placeholder with a real caption generated on-device.
+   │
+   ▼
+Chunks [ ]
 ```
-
-Both pipelines produce the same output schema. The semantic tree pipeline is better suited for documents with consistent heading hierarchies (research papers, reports); the flat Markdown pipeline is more robust for noisy or irregular layouts (financial filings, scanned documents).
 
 ---
 
@@ -55,7 +69,7 @@ Health check.
 
 ### `POST /parse-pdf`
 
-Upload a PDF file and receive structured chunks.
+Upload a PDF and receive structured chunks.
 
 **Request:** `multipart/form-data` with a `file` field containing a `.pdf` file.
 
@@ -70,7 +84,7 @@ Upload a PDF file and receive structured chunks.
       "type": "text",
       "h1_context": "Risk Factors",
       "h2_context": "Macroeconomic Conditions",
-      "content": "Risk Factors - Macroeconomic Conditions\nThe Company's operations are exposed to...",
+      "content": "[Risk Factors > Macroeconomic Conditions] The Company's operations are exposed to...",
       "html": "",
       "table_data": [],
       "image_bytes": null,
@@ -83,18 +97,29 @@ Upload a PDF file and receive structured chunks.
       "type": "table",
       "h1_context": "Financial Statements",
       "h2_context": "Consolidated Balance Sheet",
-      "content": "Financial Statements - Consolidated Balance Sheet\n...",
-      "html": "<table>...</table>",
-      "table_data": [ [{ "text": "Assets", "rowspan": 1, "colspan": 2 }], ... ],
+      "content": "[Financial Statements > Consolidated Balance Sheet] ...",
+      "html": "<table><tr><th>Assets</th>...</tr></table>",
+      "table_data": [ [{ "text": "Assets", "rowspan": 1, "colspan": 2 }] ],
       "image_bytes": null,
       "base64_image": null,
       "bboxes": [{ "page": 38, "x": 72.0, "y": 210.0, "w": 468.0, "h": 320.0 }]
+    },
+    {
+      "type": "image",
+      "h1_context": "Business Overview",
+      "h2_context": "",
+      "content": "[Business Overview] Image Description: A bar chart showing revenue by segment",
+      "html": "",
+      "table_data": [],
+      "image_bytes": "...",
+      "base64_image": null,
+      "bboxes": [{ "page": 5, "x": 72.0, "y": 300.0, "w": 400.0, "h": 250.0 }]
     }
   ]
 }
 ```
 
-**Chunk types:** `text`, `table`, `image`, `heading`, `caption`, `captioned_table`, `captioned_image`, `list`
+**Chunk types:** `text`, `table`, `image`, `heading`, `caption`, `captioned_table`, `captioned_image`, `list_item`
 
 ---
 
@@ -119,6 +144,8 @@ pillow
 python-multipart
 torchvision
 ```
+
+> **Note:** The image captioning model (`nlpconnect/vit-gpt2-image-captioning`) is downloaded automatically from Hugging Face on first run and cached locally. It runs on CPU if no GPU is available, which will be slower on documents with many images.
 
 ---
 
@@ -146,28 +173,37 @@ uvicorn api:app --host 0.0.0.0 --port 7860 --reload
 | `main.py` | Top-level `process_pdf_to_database()` orchestrator |
 | `extractor.py` | `extract_without_bleeds()`, `get_page_elements()`, layout detection |
 | `table.py` | `extract_tables()` — rowspan/colspan-aware table parser |
-| `markdown.py` | `extract_markdown()`, `markdown_chunk()` — flat chunking pipeline |
-| `tree.py` | `construct_semantic_tree()`, `flatten_tree_to_chunks()` — hierarchical pipeline |
+| `tree.py` | `construct_semantic_tree()`, `flatten_tree_to_chunks()` — semantic chunking pipeline |
+| `captioner.py` | `ImageCaptioner` singleton — on-device ViT-GPT2 image captioning |
 
 ---
 
 ## Design Notes
 
-**Why two pipelines?**
-
-The flat Markdown pipeline is fast and robust — it works well on documents where font-size hierarchy reliably encodes structure (most financial and technical PDFs). The semantic tree pipeline is better for academic or report-style documents with nested sections, where caption-to-figure bonding and hierarchical context matter more.
-
 **Bleed detection**
 
-Repeated elements (headers, footers, page numbers) are identified in a first pass by normalizing numbers (`Page 3 of 10` → `Page <NUM> of <NUM>`) and counting occurrences across pages. Anything appearing on more than 30% of pages in the top or bottom 12% of the page is blacklisted.
+Repeated elements (headers, footers, page numbers) are identified in a first pass by normalizing all numbers to `<NUM>` tokens (`Page 3 of 10` → `Page <NUM> of <NUM>`) and counting occurrences across pages. Any normalized string appearing on more than 30% of pages within the top or bottom 12% of the page height is blacklisted and silently dropped in the second pass.
 
-**Overlap design**
+**Heading detection**
 
-When a text chunk exceeds `max_chars`, the tail of the previous chunk is carried into the next with heading markers stripped. This prevents stale section context from bleeding across chunk boundaries in the vector store.
+The semantic tree uses four layered heuristics to assign heading levels:
 
-**Table cell handling**
+1. **Font hierarchy** — sizes larger than the document baseline are ranked and mapped to `h1`, `h2`, etc.
+2. **Structural patterns** — regex matching for common patterns like `1.2 Heading`, `A. Section`, `SECTION IV`
+3. **Centering + bold** — centered bold text at or above baseline is promoted to at least `h2`
+4. **Baseline bold** — short, unpunctuated bold lines at body size are assigned `h3`
 
-`None` values in PyMuPDF's `table.extract()` output are used to detect merged cells. The extractor walks right (colspan) and down (rowspan) from each non-None cell, marking cells as covered, then emits the correct `rowspan`/`colspan` attributes in both HTML and structured JSON.
+**Table cell merging**
+
+`None` values in PyMuPDF's `table.extract()` output signal merged cells. The extractor walks right (colspan) and down (rowspan) from each non-`None` anchor cell, marks covered positions, and emits the correct `rowspan`/`colspan` attributes in both the HTML and structured JSON outputs.
+
+**Image captioning**
+
+`ImageCaptioner` is implemented as a singleton to avoid reloading the ViT-GPT2 weights on every request. The model runs inference at `float32` for broad hardware compatibility. Captions are capped at 20 tokens with beam search (`num_beams=4`). If the model fails to load or inference errors, a descriptive fallback string is returned rather than crashing the parse.
+
+**Caption bonding**
+
+When a `caption` node (text starting with `Fig.`, `Figure`, `Table`, or `Chart`) immediately precedes a `table` or `image` node in the tree, `flatten_tree_to_chunks` merges them into a single `captioned_table` or `captioned_image` chunk. This keeps the label and its content together in the vector store rather than splitting them into separate retrievable units.
 
 ---
 
