@@ -22,7 +22,7 @@
     {
         "type": "paragraph",
         "h1_context": "Sample IEEE Paper for A4 Page Size",
-        "content": "[Sample IEEE Paper for A4 Page Size > ***Keywords***— <sup>**Include at least 5 keywords or phrases**</sup>] First Author<sup>#1</sup>, Second Author<sup>*2</sup>, Third Author<sup>#3</sup>\n\n*#**First-Third Department, First-Third University*\n\n*Address Including Country Name*\n\n1first.author@first-third.edu\n\n3third.author@first-third.edu\n\n****Second Company*\n\n*Address Including Country Name*\n\n2second.author@second.com\n\n*Abstract***— This document gives formatting instructions for**\n\n**authors preparing papers for publication in the Proceedings of**\n\n**an IEEE conference.  The authors must follow the instructions**\n\n**given in the document for the papers to be published.  You can**\n\n**use this document as both an instruction set and as a template**\n\n**into which you can type your own text.**\n\n",
+        "content": "[I. I<sup>NTRODUCTION</sup>] First Author<sup>#1</sup>, Second Author<sup>*2</sup>, Third Author<sup>#3</sup>\n\n*#**First-Third Department, First-Third University*\n\n*Address Including Country Name*\n\n1first.author@first-third.edu\n\n3third.author@first-third.edu\n\n****Second Company*\n\n*Address Including Country Name*\n\n2second.author@second.com\n\n*Abstract***— This document gives formatting instructions for**\n\n**authors preparing papers for publication in the Proceedings of**\n\n**an IEEE conference.  The authors must follow the instructions**\n\n**given in the document for the papers to be published.  You can**\n\n**use this document as both an instruction set and as a template**\n\n**into which you can type your own text.**\n\n***Keywords***— <sup>**Include at least 5 keywords or phrases**</sup>\n\n",
         "bboxes": [
             {
                 "page": 0,
@@ -36,28 +36,7 @@
                 "x": 40.58,
                 "y": 211.54,
                 "w": 253.42,
-                "h": 62.18
-            }
-        ],
-        "rag_score": 1.0,
-        "rag_metrics": {
-            "score": 1.0,
-            "integrity": 1.0,
-            "density": 1.0
-        }
-    },
-    {
-        "type": "heading",
-        "h1_context": "Sample IEEE Paper for A4 Page Size",
-        "h3_context": "***Keywords***— <sup>**Include at least 5 keywords or phrases**</sup>",
-        "content": "[I. I<sup>NTRODUCTION</sup>] # ***Keywords***— <sup>**Include at least 5 keywords or phrases**</sup>\n\n",
-        "bboxes": [
-            {
-                "page": 0,
-                "x": 40.58,
-                "y": 287.49,
-                "w": 201.08,
-                "h": 13.28
+                "h": 89.23
             }
         ],
         "rag_score": 1.0,
@@ -130,21 +109,63 @@
     {
         "type": "paragraph",
         "h1_context": "II. P<sup>AGE</sup> L<sup>AYOUT</sup>",
-        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup>] An easy way to comply with the conference\n\npaper formatting requirements is to use this\n\ndocument as a template and simply type your text\n\ninto it.\n\n*A.* *Page Layout*\n\nYour paper must use a page size corresponding to\n\nA4 which is 210mm (8.27\") wide and 297mm\n\n(11.69\") long.  The margins must be set as follows:\n\n Top = 19mm (0.75\")\n\n Bottom = 43mm (1.69\")\n\n Left = Right = 14.32mm (0.56\")\n\nYour paper must be in two column format with a\n\nspace of 4.22mm (0.17\") between columns.\n\n",
+        "content": "[II. P<sup>AGE</sup> L<sup>AYOUT</sup> > *A.* *Page Layout*] An easy way to comply with the conference\n\npaper formatting requirements is to use this\n\ndocument as a template and simply type your text\n\ninto it.\n\n",
         "bboxes": [
             {
                 "page": 0,
                 "x": 40.58,
                 "y": 444.95,
                 "w": 254.12,
-                "h": 187.11
+                "h": 54.82
             }
         ],
-        "rag_score": 0.927,
+        "rag_score": 0.885,
         "rag_metrics": {
-            "score": 0.927,
+            "score": 0.885,
             "integrity": 1.0,
-            "density": 0.879
+            "density": 0.808
+        }
+    },
+    {
+        "type": "heading",
+        "h1_context": "II. P<sup>AGE</sup> L<sup>AYOUT</sup>",
+        "h2_context": "*A.* *Page Layout*",
+        "content": "[II. P<sup>AGE</sup> L<sup>AYOUT</sup> > *A.* *Page Layout*] # *A.* *Page Layout*\n\n",
+        "bboxes": [
+            {
+                "page": 0,
+                "x": 40.58,
+                "y": 507.5,
+                "w": 67.83,
+                "h": 11.3
+            }
+        ],
+        "rag_score": 1.0,
+        "rag_metrics": {
+            "score": 1.0,
+            "integrity": 1.0,
+            "density": 1.0
+        }
+    },
+    {
+        "type": "paragraph",
+        "h1_context": "II. P<sup>AGE</sup> L<sup>AYOUT</sup>",
+        "h2_context": "*A.* *Page Layout*",
+        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup>] Your paper must use a page size corresponding to\n\nA4 which is 210mm (8.27\") wide and 297mm\n\n(11.69\") long.  The margins must be set as follows:\n\n Top = 19mm (0.75\")\n\n Bottom = 43mm (1.69\")\n\n Left = Right = 14.32mm (0.56\")\n\nYour paper must be in two column format with a\n\nspace of 4.22mm (0.17\") between columns.\n\n",
+        "bboxes": [
+            {
+                "page": 0,
+                "x": 40.58,
+                "y": 522.25,
+                "w": 253.98,
+                "h": 109.81
+            }
+        ],
+        "rag_score": 1.0,
+        "rag_metrics": {
+            "score": 1.0,
+            "integrity": 1.0,
+            "density": 1.0
         }
     },
     {
@@ -170,34 +191,112 @@
     {
         "type": "paragraph",
         "h1_context": "III. P<sup>AGE</sup> S<sup>TYLE</sup>",
-        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup>] All paragraphs must be indented.  All paragraphs\n\nmust be justified, i.e. both left-justified and right-\n\njustified.\n\n*A.* *Text Font of Entire Document*\n\nThe entire document should be in Times New\n\nRoman or Times font.  Type 3 fonts must not be\n\nused.  Other font types may be used if needed for\n\nspecial purposes.\n\nRecommended font sizes are shown in Table 1.\n\n*B.* *Title and Author Details*\n\nTitle must be in 24 pt Regular font.  Author name\n\nmust be in 11 pt Regular font.  Author affiliation\n\nmust be in 10 pt Italic.  Email address must be in 9\n\npt Courier Regular font.\n\n",
+        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup> > *A.* *Text Font of Entire Document*] All paragraphs must be indented.  All paragraphs\n\nmust be justified, i.e. both left-justified and right-\n\njustified.\n\n",
+        "bboxes": [
+            {
+                "page": 0,
+                "x": 40.58,
+                "y": 656.22,
+                "w": 253.99,
+                "h": 40.88
+            }
+        ],
+        "rag_score": 1.0,
+        "rag_metrics": {
+            "score": 1.0,
+            "integrity": 1.0,
+            "density": 1.0
+        }
+    },
+    {
+        "type": "heading",
+        "h1_context": "III. P<sup>AGE</sup> S<sup>TYLE</sup>",
+        "h2_context": "*A.* *Text Font of Entire Document*",
+        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup> > *A.* *Text Font of Entire Document*] # *A.* *Text Font of Entire Document*\n\n",
+        "bboxes": [
+            {
+                "page": 0,
+                "x": 40.58,
+                "y": 704.86,
+                "w": 136.97,
+                "h": 11.3
+            }
+        ],
+        "rag_score": 1.0,
+        "rag_metrics": {
+            "score": 1.0,
+            "integrity": 1.0,
+            "density": 1.0
+        }
+    },
+    {
+        "type": "paragraph",
+        "h1_context": "III. P<sup>AGE</sup> S<sup>TYLE</sup>",
+        "h2_context": "*A.* *Text Font of Entire Document*",
+        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup> > *B.* *Title and Author Details*] The entire document should be in Times New\n\nRoman or Times font.  Type 3 fonts must not be\n\nused.  Other font types may be used if needed for\n\nspecial purposes.\n\nRecommended font sizes are shown in Table 1.\n\n",
         "bboxes": [
             {
                 "page": 0,
                 "x": 303.72,
                 "y": 211.62,
                 "w": 254.05,
-                "h": 145.79
-            },
-            {
-                "page": 0,
-                "x": 40.58,
-                "y": 656.22,
-                "w": 253.99,
-                "h": 59.94
+                "h": 68.48
             }
         ],
-        "rag_score": 0.944,
+        "rag_score": 0.996,
         "rag_metrics": {
-            "score": 0.944,
+            "score": 0.996,
             "integrity": 1.0,
-            "density": 0.906
+            "density": 0.993
+        }
+    },
+    {
+        "type": "heading",
+        "h1_context": "III. P<sup>AGE</sup> S<sup>TYLE</sup>",
+        "h2_context": "*B.* *Title and Author Details*",
+        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup> > *B.* *Title and Author Details*] # *B.* *Title and Author Details*\n\n",
+        "bboxes": [
+            {
+                "page": 0,
+                "x": 303.72,
+                "y": 288.1,
+                "w": 114.41,
+                "h": 11.3
+            }
+        ],
+        "rag_score": 1.0,
+        "rag_metrics": {
+            "score": 1.0,
+            "integrity": 1.0,
+            "density": 1.0
+        }
+    },
+    {
+        "type": "paragraph",
+        "h1_context": "III. P<sup>AGE</sup> S<sup>TYLE</sup>",
+        "h2_context": "*B.* *Title and Author Details*",
+        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup> > *B.* *Title and Author Details*] Title must be in 24 pt Regular font.  Author name\n\nmust be in 11 pt Regular font.  Author affiliation\n\nmust be in 10 pt Italic.  Email address must be in 9\n\npt Courier Regular font.\n\n",
+        "bboxes": [
+            {
+                "page": 0,
+                "x": 303.72,
+                "y": 302.61,
+                "w": 254.01,
+                "h": 54.8
+            }
+        ],
+        "rag_score": 1.0,
+        "rag_metrics": {
+            "score": 1.0,
+            "integrity": 1.0,
+            "density": 1.0
         }
     },
     {
         "type": "captioned_table",
         "h1_context": "III. P<sup>AGE</sup> S<sup>TYLE</sup>",
-        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup>] TABLE I\n\nF<sup>ONT</sup> S<sup>IZES FOR</sup> P<sup>APERS</sup>\n\n\n<table>\n  <tr>\n    <th rowspan=\"2\">Font Size</th>\n    <th colspan=\"3\">Appearance (in Time New Roman or Times)</th>\n  </tr>\n  <tr>\n    <td>Regular</td>\n    <td>Bold</td>\n    <td>Italic</td>\n  </tr>\n  <tr>\n    <td>8</td>\n    <td>table caption (in Small Caps), figure caption, reference item</td>\n    <td></td>\n    <td>reference item (partial)</td>\n  </tr>\n  <tr>\n    <td>9</td>\n    <td>author email address (in Courier), cell in a table</td>\n    <td>abstract body</td>\n    <td>abstract heading (also in Bold)</td>\n  </tr>\n  <tr>\n    <td>10</td>\n    <td>level-1 heading (in Small Caps), paragraph</td>\n    <td></td>\n    <td>level-2 heading, level-3 heading, author affiliation</td>\n  </tr>\n  <tr>\n    <td>11</td>\n    <td>author name</td>\n    <td></td>\n    <td></td>\n  </tr>\n  <tr>\n    <td>24</td>\n    <td>title</td>\n    <td></td>\n    <td></td>\n  </tr>\n</table>\n",
+        "h2_context": "*B.* *Title and Author Details*",
+        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup> > *B.* *Title and Author Details*] TABLE I\n\nF<sup>ONT</sup> S<sup>IZES FOR</sup> P<sup>APERS</sup>\n\n\n<table>\n  <tr>\n    <th rowspan=\"2\">Font Size</th>\n    <th colspan=\"3\">Appearance (in Time New Roman or Times)</th>\n  </tr>\n  <tr>\n    <td>Regular</td>\n    <td>Bold</td>\n    <td>Italic</td>\n  </tr>\n  <tr>\n    <td>8</td>\n    <td>table caption (in Small Caps), figure caption, reference item</td>\n    <td></td>\n    <td>reference item (partial)</td>\n  </tr>\n  <tr>\n    <td>9</td>\n    <td>author email address (in Courier), cell in a table</td>\n    <td>abstract body</td>\n    <td>abstract heading (also in Bold)</td>\n  </tr>\n  <tr>\n    <td>10</td>\n    <td>level-1 heading (in Small Caps), paragraph</td>\n    <td></td>\n    <td>level-2 heading, level-3 heading, author affiliation</td>\n  </tr>\n  <tr>\n    <td>11</td>\n    <td>author name</td>\n    <td></td>\n    <td></td>\n  </tr>\n  <tr>\n    <td>24</td>\n    <td>title</td>\n    <td></td>\n    <td></td>\n  </tr>\n</table>\n",
         "bboxes": [
             {
                 "page": 0,
@@ -217,7 +316,8 @@
     {
         "type": "paragraph",
         "h1_context": "III. P<sup>AGE</sup> S<sup>TYLE</sup>",
-        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup>] All title and author details must be in single-\n\ncolumn format and must be centered.\n\nEvery word in a title must be capitalized except\n\nfor short minor words such as “a”, “an”, “and”, “as”,\n\n“at”, “by”, “for”, “from”, “if”, “in”, “into”, “on”,\n\n“or”, “of”, “the”, “to”, “with”.\n\nAuthor details must not show any professional\n\ntitle (e.g. Managing Director), any academic title\n\n(e.g. Dr.) or any membership of any professional\n\norganization (e.g. Senior Member IEEE).\n\nTo avoid confusion, the family name must be\n\nwritten as the last part of each author name (e.g.\n\nJohn A.K. Smith).\n\nEach affiliation must include, at the very least,\n\nthe name of the company and the name of the\n\ncountry where the author is based (e.g. Causal\n\nProductions Pty Ltd, Australia).\n\nEmail\n\naddress\n\nis\n\ncompulsory\n\nfor\n\nthe\n\n",
+        "h2_context": "*B.* *Title and Author Details*",
+        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup> > *B.* *Title and Author Details*] All title and author details must be in single-\n\ncolumn format and must be centered.\n\nEvery word in a title must be capitalized except\n\nfor short minor words such as “a”, “an”, “and”, “as”,\n\n“at”, “by”, “for”, “from”, “if”, “in”, “into”, “on”,\n\n“or”, “of”, “the”, “to”, “with”.\n\nAuthor details must not show any professional\n\ntitle (e.g. Managing Director), any academic title\n\n(e.g. Dr.) or any membership of any professional\n\norganization (e.g. Senior Member IEEE).\n\nTo avoid confusion, the family name must be\n\nwritten as the last part of each author name (e.g.\n\nJohn A.K. Smith).\n\nEach affiliation must include, at the very least,\n\nthe name of the company and the name of the\n\ncountry where the author is based (e.g. Causal\n\nProductions Pty Ltd, Australia).\n\nEmail\n\naddress\n\nis\n\ncompulsory\n\nfor\n\nthe\n\n",
         "bboxes": [
             {
                 "page": 0,
@@ -234,24 +334,25 @@
                 "h": 110.03
             }
         ],
-        "rag_score": 0.609,
+        "rag_score": 0.629,
         "rag_metrics": {
-            "score": 0.609,
+            "score": 0.629,
             "integrity": 1.0,
-            "density": 0.348
+            "density": 0.381
         }
     },
     {
         "type": "paragraph",
         "h1_context": "III. P<sup>AGE</sup> S<sup>TYLE</sup>",
-        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup> > 3)  *Level-3 Heading:*  A level-3 heading must be indented,] corresponding author.\n\n*C.* *Section Headings*\n\nNo more than 3 levels of headings should be used.\n\nAll headings must be in 10pt font.  Every word in a\n\nheading must be capitalized except for short minor\n\nwords as listed in Section III-B.\n\n*1)  Level-1 Heading*:  A level-1 heading must be in Small\n\nCaps, centered and numbered using uppercase Roman\n\nnumerals.  For example, see heading “III. Page Style” of this\n\ndocument.  The two level-1 headings which must not be\n\nnumbered are “Acknowledgment” and “References”.\n\n*2)  Level-2 Heading:*  A level-2 heading must be in Italic,\n\nleft-justified and numbered using an uppercase alphabetic\n\nletter followed by a period.  For example, see heading “C.\n\nSection Headings” above.\n\n",
+        "h2_context": "*B.* *Title and Author Details*",
+        "content": "[*C.* *Section Headings*] corresponding author.\n\n",
         "bboxes": [
             {
                 "page": 1,
                 "x": 40.58,
                 "y": 164.32,
-                "w": 260.38,
-                "h": 206.12
+                "w": 108.39,
+                "h": 13.28
             }
         ],
         "rag_score": 1.0,
@@ -263,9 +364,133 @@
     },
     {
         "type": "heading",
-        "h1_context": "III. P<sup>AGE</sup> S<sup>TYLE</sup>",
+        "h1_context": "*C.* *Section Headings*",
+        "content": "[*C.* *Section Headings*] # *C.* *Section Headings*\n\n",
+        "bboxes": [
+            {
+                "page": 1,
+                "x": 40.58,
+                "y": 185.57,
+                "w": 87.27,
+                "h": 11.3
+            }
+        ],
+        "rag_score": 1.0,
+        "rag_metrics": {
+            "score": 1.0,
+            "integrity": 1.0,
+            "density": 1.0
+        }
+    },
+    {
+        "type": "paragraph",
+        "h1_context": "*C.* *Section Headings*",
+        "content": "[*C.* *Section Headings* > *1)  Level-1 Heading*:  A level-1 heading must be in Small] No more than 3 levels of headings should be used.\n\nAll headings must be in 10pt font.  Every word in a\n\nheading must be capitalized except for short minor\n\nwords as listed in Section III-B.\n\n",
+        "bboxes": [
+            {
+                "page": 1,
+                "x": 40.58,
+                "y": 200.1,
+                "w": 260.38,
+                "h": 54.8
+            }
+        ],
+        "rag_score": 0.89,
+        "rag_metrics": {
+            "score": 0.89,
+            "integrity": 1.0,
+            "density": 0.816
+        }
+    },
+    {
+        "type": "heading",
+        "h1_context": "*C.* *Section Headings*",
+        "h3_context": "*1)  Level-1 Heading*:  A level-1 heading must be in Small",
+        "content": "[*C.* *Section Headings* > *1)  Level-1 Heading*:  A level-1 heading must be in Small] # *1)  Level-1 Heading*:  A level-1 heading must be in Small\n\n",
+        "bboxes": [
+            {
+                "page": 1,
+                "x": 51.38,
+                "y": 261.33,
+                "w": 242.72,
+                "h": 11.16
+            }
+        ],
+        "rag_score": 1.0,
+        "rag_metrics": {
+            "score": 1.0,
+            "integrity": 1.0,
+            "density": 1.0
+        }
+    },
+    {
+        "type": "paragraph",
+        "h1_context": "*C.* *Section Headings*",
+        "h3_context": "*1)  Level-1 Heading*:  A level-1 heading must be in Small",
+        "content": "[*C.* *Section Headings* > *2)  Level-2 Heading:*  A level-2 heading must be in Italic,] Caps, centered and numbered using uppercase Roman\n\nnumerals.  For example, see heading “III. Page Style” of this\n\ndocument.  The two level-1 headings which must not be\n\nnumbered are “Acknowledgment” and “References”.\n\n",
+        "bboxes": [
+            {
+                "page": 1,
+                "x": 40.58,
+                "y": 272.85,
+                "w": 253.63,
+                "h": 45.51
+            }
+        ],
+        "rag_score": 1.0,
+        "rag_metrics": {
+            "score": 1.0,
+            "integrity": 1.0,
+            "density": 1.0
+        }
+    },
+    {
+        "type": "heading",
+        "h1_context": "*C.* *Section Headings*",
+        "h3_context": "*2)  Level-2 Heading:*  A level-2 heading must be in Italic,",
+        "content": "[*C.* *Section Headings* > *2)  Level-2 Heading:*  A level-2 heading must be in Italic,] # *2)  Level-2 Heading:*  A level-2 heading must be in Italic,\n\n",
+        "bboxes": [
+            {
+                "page": 1,
+                "x": 51.38,
+                "y": 324.96,
+                "w": 242.7,
+                "h": 11.16
+            }
+        ],
+        "rag_score": 1.0,
+        "rag_metrics": {
+            "score": 1.0,
+            "integrity": 1.0,
+            "density": 1.0
+        }
+    },
+    {
+        "type": "paragraph",
+        "h1_context": "*C.* *Section Headings*",
+        "h3_context": "*2)  Level-2 Heading:*  A level-2 heading must be in Italic,",
+        "content": "[*C.* *Section Headings* > 3)  *Level-3 Heading:*  A level-3 heading must be indented,] left-justified and numbered using an uppercase alphabetic\n\nletter followed by a period.  For example, see heading “C.\n\nSection Headings” above.\n\n",
+        "bboxes": [
+            {
+                "page": 1,
+                "x": 40.58,
+                "y": 336.48,
+                "w": 253.5,
+                "h": 33.96
+            }
+        ],
+        "rag_score": 1.0,
+        "rag_metrics": {
+            "score": 1.0,
+            "integrity": 1.0,
+            "density": 1.0
+        }
+    },
+    {
+        "type": "heading",
+        "h1_context": "*C.* *Section Headings*",
         "h3_context": "3)  *Level-3 Heading:*  A level-3 heading must be indented,",
-        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup> > 3)  *Level-3 Heading:*  A level-3 heading must be indented,] # 3)  *Level-3 Heading:*  A level-3 heading must be indented,\n\n",
+        "content": "[*C.* *Section Headings* > 3)  *Level-3 Heading:*  A level-3 heading must be indented,] # 3)  *Level-3 Heading:*  A level-3 heading must be indented,\n\n",
         "bboxes": [
             {
                 "page": 1,
@@ -284,30 +509,51 @@
     },
     {
         "type": "paragraph",
-        "h1_context": "III. P<sup>AGE</sup> S<sup>TYLE</sup>",
+        "h1_context": "*C.* *Section Headings*",
         "h3_context": "3)  *Level-3 Heading:*  A level-3 heading must be indented,",
-        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup> > 3)  *Level-3 Heading:*  A level-3 heading must be indented,] in Italic and numbered with an Arabic numeral followed by a\n\nright parenthesis. The level-3 heading must end with a colon.\n\nThe body of the level-3 section immediately follows the level-\n\n3 heading in the same paragraph.  For example, this paragraph\n\nbegins with a level-3 heading.\n\n*D.* *Figures and Tables*\n\n",
+        "content": "[*C.* *Section Headings* > *D.* *Figures and Tables*] in Italic and numbered with an Arabic numeral followed by a\n\nright parenthesis. The level-3 heading must end with a colon.\n\nThe body of the level-3 section immediately follows the level-\n\n3 heading in the same paragraph.  For example, this paragraph\n\nbegins with a level-3 heading.\n\n",
         "bboxes": [
             {
                 "page": 1,
                 "x": 40.58,
                 "y": 388.58,
                 "w": 255.88,
-                "h": 75.98
+                "h": 56.76
             }
         ],
-        "rag_score": 1.0,
+        "rag_score": 0.77,
         "rag_metrics": {
-            "score": 1.0,
+            "score": 0.77,
             "integrity": 1.0,
-            "density": 1.0
+            "density": 0.617
+        }
+    },
+    {
+        "type": "heading",
+        "h1_context": "*C.* *Section Headings*",
+        "h2_context": "*D.* *Figures and Tables*",
+        "content": "[*C.* *Section Headings* > *D.* *Figures and Tables*] # *D.* *Figures and Tables*\n\n",
+        "bboxes": [
+            {
+                "page": 1,
+                "x": 40.58,
+                "y": 453.26,
+                "w": 94.71,
+                "h": 11.3
+            }
+        ],
+        "rag_score": 0.708,
+        "rag_metrics": {
+            "score": 0.708,
+            "integrity": 1.0,
+            "density": 0.513
         }
     },
     {
         "type": "caption",
-        "h1_context": "III. P<sup>AGE</sup> S<sup>TYLE</sup>",
-        "h3_context": "3)  *Level-3 Heading:*  A level-3 heading must be indented,",
-        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup> > 3)  *Level-3 Heading:*  A level-3 heading must be indented,] Figures and tables must be centered in the\n\ncolumn.  Large figures and tables may span across\n\nboth columns.  Any table or figure that takes up\n\nmore than 1 column width must be positioned either\n\nat the top or at the bottom of the page.\n\nGraphics may be full color.  All colors will be\n\nretained on the CDROM.  Graphics must not use\n\nstipple fill patterns because they may not be\n\nreproduced properly.  Please use only *SOLID FILL*\n\ncolors which contrast well both on screen and on a\n\nblack-and-white hardcopy, as shown in Fig. 1.\n\n",
+        "h1_context": "*C.* *Section Headings*",
+        "h2_context": "*D.* *Figures and Tables*",
+        "content": "[*C.* *Section Headings* > *D.* *Figures and Tables*] Figures and tables must be centered in the\n\ncolumn.  Large figures and tables may span across\n\nboth columns.  Any table or figure that takes up\n\nmore than 1 column width must be positioned either\n\nat the top or at the bottom of the page.\n\nGraphics may be full color.  All colors will be\n\nretained on the CDROM.  Graphics must not use\n\nstipple fill patterns because they may not be\n\nreproduced properly.  Please use only *SOLID FILL*\n\ncolors which contrast well both on screen and on a\n\nblack-and-white hardcopy, as shown in Fig. 1.\n\n",
         "bboxes": [
             {
                 "page": 1,
@@ -317,18 +563,18 @@
                 "h": 151.31
             }
         ],
-        "rag_score": 0.815,
+        "rag_score": 0.638,
         "rag_metrics": {
-            "score": 0.815,
+            "score": 0.638,
             "integrity": 1.0,
-            "density": 0.692
+            "density": 0.396
         }
     },
     {
         "type": "caption",
-        "h1_context": "III. P<sup>AGE</sup> S<sup>TYLE</sup>",
-        "h3_context": "3)  *Level-3 Heading:*  A level-3 heading must be indented,",
-        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup> > 3)  *Level-3 Heading:*  A level-3 heading must be indented,] Fig. 1  A sample line graph using colors which contrast well both on screen\n\nand on a black-and-white hardcopy\n\n",
+        "h1_context": "*C.* *Section Headings*",
+        "h2_context": "*D.* *Figures and Tables*",
+        "content": "[*C.* *Section Headings* > *D.* *Figures and Tables*] Fig. 1  A sample line graph using colors which contrast well both on screen\n\nand on a black-and-white hardcopy\n\n",
         "bboxes": [
             {
                 "page": 1,
@@ -338,6 +584,48 @@
                 "h": 17.89
             }
         ],
+        "rag_score": 0.696,
+        "rag_metrics": {
+            "score": 0.696,
+            "integrity": 1.0,
+            "density": 0.494
+        }
+    },
+    {
+        "type": "caption",
+        "h1_context": "*C.* *Section Headings*",
+        "h2_context": "*D.* *Figures and Tables*",
+        "content": "[*C.* *Section Headings* > *E.* *Figure Captions*] Fig. 2 shows an example of a low-resolution\n\nimage which would not be acceptable, whereas Fig.\n\n3 shows an example of an image with adequate\n\nresolution.  Check that the resolution is adequate to\n\nreveal the important detail in the figure.\n\nPlease check all figures in your paper both on\n\nscreen and on a black-and-white hardcopy.  When\n\nyou check your paper on a black-and-white\n\nhardcopy, please ensure that:\n\n the colors used in each figure contrast well,\n\n the image used in each figure is clear,\n\n all text labels in each figure are legible.\n\n",
+        "bboxes": [
+            {
+                "page": 1,
+                "x": 303.72,
+                "y": 239.22,
+                "w": 254.1,
+                "h": 165.01
+            }
+        ],
+        "rag_score": 0.558,
+        "rag_metrics": {
+            "score": 0.558,
+            "integrity": 1.0,
+            "density": 0.264
+        }
+    },
+    {
+        "type": "heading",
+        "h1_context": "*C.* *Section Headings*",
+        "h2_context": "*E.* *Figure Captions*",
+        "content": "[*C.* *Section Headings* > *E.* *Figure Captions*] # *E.* *Figure Captions*\n\n",
+        "bboxes": [
+            {
+                "page": 1,
+                "x": 303.72,
+                "y": 412.2,
+                "w": 82.7,
+                "h": 11.3
+            }
+        ],
         "rag_score": 1.0,
         "rag_metrics": {
             "score": 1.0,
@@ -347,30 +635,9 @@
     },
     {
         "type": "caption",
-        "h1_context": "III. P<sup>AGE</sup> S<sup>TYLE</sup>",
-        "h3_context": "3)  *Level-3 Heading:*  A level-3 heading must be indented,",
-        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup> > 3)  *Level-3 Heading:*  A level-3 heading must be indented,] Fig. 2 shows an example of a low-resolution\n\nimage which would not be acceptable, whereas Fig.\n\n3 shows an example of an image with adequate\n\nresolution.  Check that the resolution is adequate to\n\nreveal the important detail in the figure.\n\nPlease check all figures in your paper both on\n\nscreen and on a black-and-white hardcopy.  When\n\nyou check your paper on a black-and-white\n\nhardcopy, please ensure that:\n\n the colors used in each figure contrast well,\n\n the image used in each figure is clear,\n\n all text labels in each figure are legible.\n\n*E.* *Figure Captions*\n\n",
-        "bboxes": [
-            {
-                "page": 1,
-                "x": 303.72,
-                "y": 239.22,
-                "w": 254.1,
-                "h": 184.28
-            }
-        ],
-        "rag_score": 0.727,
-        "rag_metrics": {
-            "score": 0.727,
-            "integrity": 1.0,
-            "density": 0.545
-        }
-    },
-    {
-        "type": "caption",
-        "h1_context": "III. P<sup>AGE</sup> S<sup>TYLE</sup>",
-        "h3_context": "3)  *Level-3 Heading:*  A level-3 heading must be indented,",
-        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup> > 3)  *Level-3 Heading:*  A level-3 heading must be indented,] Figures must be numbered using Arabic numerals.\n\n",
+        "h1_context": "*C.* *Section Headings*",
+        "h2_context": "*E.* *Figure Captions*",
+        "content": "[*C.* *Section Headings* > *E.* *Figure Captions*] Figures must be numbered using Arabic numerals.\n\n",
         "bboxes": [
             {
                 "page": 1,
@@ -380,18 +647,18 @@
                 "h": 13.28
             }
         ],
-        "rag_score": 1.0,
+        "rag_score": 0.971,
         "rag_metrics": {
-            "score": 1.0,
+            "score": 0.971,
             "integrity": 1.0,
-            "density": 1.0
+            "density": 0.952
         }
     },
     {
         "type": "captioned_image",
-        "h1_context": "III. P<sup>AGE</sup> S<sup>TYLE</sup>",
-        "h3_context": "3)  *Level-3 Heading:*  A level-3 heading must be indented,",
-        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup> > 3)  *Level-3 Heading:*  A level-3 heading must be indented,] Figure captions must be in 8 pt Regular font.\n\nCaptions of a single line (e.g. Fig. 2) must be\n\ncentered whereas multi-line captions must be\n\njustified (e.g. Fig. 1).  Captions with figure numbers\n\nmust be placed after their associated figures, as\n\nshown in     Fig. 1.\n\n\nImage Description: A cell phone that is on top of a table",
+        "h1_context": "*C.* *Section Headings*",
+        "h2_context": "*E.* *Figure Captions*",
+        "content": "[*C.* *Section Headings* > *E.* *Figure Captions*] Figure captions must be in 8 pt Regular font.\n\nCaptions of a single line (e.g. Fig. 2) must be\n\ncentered whereas multi-line captions must be\n\njustified (e.g. Fig. 1).  Captions with figure numbers\n\nmust be placed after their associated figures, as\n\nshown in     Fig. 1.\n\n\nImage Description: A cell phone that is on top of a table",
         "bboxes": [
             {
                 "page": 1,
@@ -401,18 +668,19 @@
                 "h": 265.94
             }
         ],
-        "rag_score": 1.0,
+        "base64_image": "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",
+        "rag_score": 0.837,
         "rag_metrics": {
-            "score": 1.0,
+            "score": 0.837,
             "integrity": 1.0,
-            "density": 1.0
+            "density": 0.729
         }
     },
     {
         "type": "captioned_image",
-        "h1_context": "III. P<sup>AGE</sup> S<sup>TYLE</sup>",
-        "h3_context": "3)  *Level-3 Heading:*  A level-3 heading must be indented,",
-        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup> > 3)  *Level-3 Heading:*  A level-3 heading must be indented,] Fig. 2  Example of an unacceptable low-resolution image\n\n\nImage Description: A cell phone that is on top of a table",
+        "h1_context": "*C.* *Section Headings*",
+        "h2_context": "*E.* *Figure Captions*",
+        "content": "[*C.* *Section Headings* > *E.* *Figure Captions*] Fig. 2  Example of an unacceptable low-resolution image\n\n\nImage Description: A cell phone that is on top of a table",
         "bboxes": [
             {
                 "page": 2,
@@ -429,6 +697,28 @@
                 "h": 176.15
             }
         ],
+        "base64_image": "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",
+        "rag_score": 0.993,
+        "rag_metrics": {
+            "score": 0.993,
+            "integrity": 1.0,
+            "density": 0.988
+        }
+    },
+    {
+        "type": "caption",
+        "h1_context": "*C.* *Section Headings*",
+        "h2_context": "*E.* *Figure Captions*",
+        "content": "[*C.* *Section Headings* > *F.* *Table Captions*] Fig. 3  Example of an image with acceptable resolution\n\n",
+        "bboxes": [
+            {
+                "page": 2,
+                "x": 77.54,
+                "y": 265.17,
+                "w": 178.94,
+                "h": 8.77
+            }
+        ],
         "rag_score": 1.0,
         "rag_metrics": {
             "score": 1.0,
@@ -437,18 +727,11 @@
         }
     },
     {
-        "type": "caption",
-        "h1_context": "III. P<sup>AGE</sup> S<sup>TYLE</sup>",
-        "h3_context": "3)  *Level-3 Heading:*  A level-3 heading must be indented,",
-        "content": "[III. P<sup>AGE</sup> S<sup>TYLE</sup> > 3)  *Level-3 Heading:*  A level-3 heading must be indented,] Fig. 3  Example of an image with acceptable resolution\n\n*F.* *Table Captions*\n\n",
+        "type": "heading",
+        "h1_context": "*C.* *Section Headings*",
+        "h2_context": "*F.* *Table Captions*",
+        "content": "[*C.* *Section Headings* > *F.* *Table Captions*] # *F.* *Table Captions*\n\n",
         "bboxes": [
-            {
-                "page": 2,
-                "x": 77.54,
-                "y": 265.17,
-                "w": 178.94,
-                "h": 8.77
-            },
             {
                 "page": 2,
                 "x": 40.58,
@@ -466,23 +749,167 @@
     },
     {
         "type": "caption",
-        "h1_context": "III. P<sup>AGE</sup> S<sup>TYLE</sup>",
-        "h3_context": "3)  *Level-3 Heading:*  A level-3 heading must be indented,",
-        "content": "[IV. C<sup>ONCLUSIONS</sup>] Tables must be numbered using uppercase\n\nRoman numerals.  Table captions must be centred\n\nand in 8 pt Regular font with Small Caps.  Every\n\nword in a table caption must be capitalized except\n\nfor short minor words as listed in Section III-B.\n\nCaptions with table numbers must be placed before\n\ntheir associated tables, as shown in Table 1.\n\n*G.* *Page Numbers, Headers and Footers*\n\nPage numbers, headers and footers must not be\n\nused.\n\n*H.* *Links and Bookmarks*\n\nAll hypertext links and section bookmarks will be\n\nremoved from papers during the processing of\n\npapers for publication.  If you need to refer to an\n\nInternet email address or URL in your paper, you\n\nmust type out the address or URL fully in Regular\n\nfont.\n\n*I.* *References*\n\nThe heading of the References section must not\n\nbe numbered.  All reference items must be in 8 pt\n\nfont.  Please use Regular and Italic styles to\n\ndistinguish different fields as shown in the\n\nReferences section.  Number the reference items\n\nconsecutively in square brackets (e.g. [1]).\n\nWhen referring to a reference item, please simply\n\nuse the reference number, as in [2].  Do not use\n\n“Ref. [3]” or “Reference [3]” except at the\n\nbeginning of a sentence, e.g.  “Reference [3]\n\nshows …”.  Multiple references are each numbered\n\nwith separate brackets (e.g. [2], [3], [4]–[6]).\n\nExamples of reference items of different\n\ncategories shown in the References section include:\n\n example of a book in [1]\n\n example of a book in a series in [2]\n\n example of a journal article in [3]\n\n example of a conference paper in [4]\n\n example of a patent in [5]\n\n example of a website in [6]\n\n example of a web page in [7]\n\n example of a databook as a manual in [8]\n\n example of a datasheet in [9]\n\n example of a master’s thesis in [10]\n\n example of a technical report in [11]\n\n example of a standard in [12]\n\n",
+        "h1_context": "*C.* *Section Headings*",
+        "h2_context": "*F.* *Table Captions*",
+        "content": "[*C.* *Section Headings* > *G.* *Page Numbers, Headers and Footers*] Tables must be numbered using uppercase\n\nRoman numerals.  Table captions must be centred\n\nand in 8 pt Regular font with Small Caps.  Every\n\nword in a table caption must be capitalized except\n\nfor short minor words as listed in Section III-B.\n\nCaptions with table numbers must be placed before\n\ntheir associated tables, as shown in Table 1.\n\n",
         "bboxes": [
             {
                 "page": 2,
                 "x": 40.58,
-                "y": 61.22,
-                "w": 517.28,
-                "h": 505.54
+                "y": 316.29,
+                "w": 257.26,
+                "h": 96.1
             }
         ],
-        "rag_score": 0.782,
+        "rag_score": 0.758,
         "rag_metrics": {
-            "score": 0.782,
+            "score": 0.758,
             "integrity": 1.0,
-            "density": 0.636
+            "density": 0.597
+        }
+    },
+    {
+        "type": "heading",
+        "h1_context": "*C.* *Section Headings*",
+        "h2_context": "*G.* *Page Numbers, Headers and Footers*",
+        "content": "[*C.* *Section Headings* > *G.* *Page Numbers, Headers and Footers*] # *G.* *Page Numbers, Headers and Footers*\n\n",
+        "bboxes": [
+            {
+                "page": 2,
+                "x": 40.58,
+                "y": 420.12,
+                "w": 166.01,
+                "h": 11.3
+            }
+        ],
+        "rag_score": 1.0,
+        "rag_metrics": {
+            "score": 1.0,
+            "integrity": 1.0,
+            "density": 1.0
+        }
+    },
+    {
+        "type": "paragraph",
+        "h1_context": "*C.* *Section Headings*",
+        "h2_context": "*G.* *Page Numbers, Headers and Footers*",
+        "content": "[*C.* *Section Headings* > *H.* *Links and Bookmarks*] Page numbers, headers and footers must not be\n\nused.\n\n",
+        "bboxes": [
+            {
+                "page": 2,
+                "x": 40.58,
+                "y": 434.87,
+                "w": 253.84,
+                "h": 27.2
+            }
+        ],
+        "rag_score": 0.635,
+        "rag_metrics": {
+            "score": 0.635,
+            "integrity": 1.0,
+            "density": 0.392
+        }
+    },
+    {
+        "type": "heading",
+        "h1_context": "*C.* *Section Headings*",
+        "h2_context": "*H.* *Links and Bookmarks*",
+        "content": "[*C.* *Section Headings* > *H.* *Links and Bookmarks*] # *H.* *Links and Bookmarks*\n\n",
+        "bboxes": [
+            {
+                "page": 2,
+                "x": 40.58,
+                "y": 469.82,
+                "w": 103.59,
+                "h": 11.3
+            }
+        ],
+        "rag_score": 0.708,
+        "rag_metrics": {
+            "score": 0.708,
+            "integrity": 1.0,
+            "density": 0.513
+        }
+    },
+    {
+        "type": "paragraph",
+        "h1_context": "*C.* *Section Headings*",
+        "h2_context": "*H.* *Links and Bookmarks*",
+        "content": "[*I.* *References*] All hypertext links and section bookmarks will be\n\nremoved from papers during the processing of\n\npapers for publication.  If you need to refer to an\n\nInternet email address or URL in your paper, you\n\nmust type out the address or URL fully in Regular\n\nfont.\n\n",
+        "bboxes": [
+            {
+                "page": 2,
+                "x": 40.58,
+                "y": 484.57,
+                "w": 254.0,
+                "h": 82.19
+            }
+        ],
+        "rag_score": 0.57,
+        "rag_metrics": {
+            "score": 0.57,
+            "integrity": 1.0,
+            "density": 0.284
+        }
+    },
+    {
+        "type": "heading",
+        "h1_context": "*I.* *References*",
+        "content": "[*I.* *References*] # *I.* *References*\n\n",
+        "bboxes": [
+            {
+                "page": 2,
+                "x": 303.72,
+                "y": 61.22,
+                "w": 60.86,
+                "h": 11.3
+            }
+        ],
+        "rag_score": 0.4,
+        "rag_metrics": {
+            "score": 0.4,
+            "integrity": 1.0,
+            "density": 0.0
+        }
+    },
+    {
+        "type": "paragraph",
+        "h1_context": "*I.* *References*",
+        "content": "[*I.* *References*] The heading of the References section must not\n\nbe numbered.  All reference items must be in 8 pt\n\nfont.  Please use Regular and Italic styles to\n\ndistinguish different fields as shown in the\n\nReferences section.  Number the reference items\n\nconsecutively in square brackets (e.g. [1]).\n\nWhen referring to a reference item, please simply\n\nuse the reference number, as in [2].  Do not use\n\n“Ref. [3]” or “Reference [3]” except at the\n\nbeginning of a sentence, e.g.  “Reference [3]\n\nshows …”.  Multiple references are each numbered\n\nwith separate brackets (e.g. [2], [3], [4]–[6]).\n\nExamples of reference items of different\n\ncategories shown in the References section include:\n\n example of a book in [1]\n\n example of a book in a series in [2]\n\n example of a journal article in [3]\n\n example of a conference paper in [4]\n\n",
+        "bboxes": [
+            {
+                "page": 2,
+                "x": 303.72,
+                "y": 75.97,
+                "w": 254.14,
+                "h": 247.84
+            }
+        ],
+        "rag_score": 0.8,
+        "rag_metrics": {
+            "score": 0.8,
+            "integrity": 1.0,
+            "density": 0.667
+        }
+    },
+    {
+        "type": "paragraph",
+        "h1_context": "*I.* *References*",
+        "content": "[IV. C<sup>ONCLUSIONS</sup>]  example of a patent in [5]\n\n example of a website in [6]\n\n example of a web page in [7]\n\n example of a databook as a manual in [8]\n\n example of a datasheet in [9]\n\n example of a master’s thesis in [10]\n\n example of a technical report in [11]\n\n example of a standard in [12]\n\n",
+        "bboxes": [
+            {
+                "page": 2,
+                "x": 318.12,
+                "y": 324.45,
+                "w": 211.87,
+                "h": 109.78
+            }
+        ],
+        "rag_score": 1.0,
+        "rag_metrics": {
+            "score": 1.0,
+            "integrity": 1.0,
+            "density": 1.0
         }
     },
     {

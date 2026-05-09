@@ -19,8 +19,7 @@ class ImageCaptioner:
         self.model_name = "nlpconnect/vit-gpt2-image-captioning"
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         
-        # CPU generally requires float32 or bfloat16. GPU can use float16.
-        # We use float32 by default for compatibility, but the weight file is cached.
+        # Use float32 for compatibility; weights are cached.
         self.torch_dtype = torch.float32 
         
         print(f"Loading Image Captioner ({self.model_name}) on {self.device}...")

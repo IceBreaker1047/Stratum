@@ -1,7 +1,7 @@
 import re
 
 def check_intersection(box1, box2):
-    """Check if two bounding boxes intersect and return the intersection area."""
+    # Check if two bounding boxes intersect and return the intersection area.
     if box1["page"] != box2["page"]:
         return 0.0
         

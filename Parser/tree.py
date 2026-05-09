@@ -1,7 +1,7 @@
 import re
 
 def is_list_item(text):
-    """Check if the text is a list item using regex."""
+    # Check if the text is a list item using regex.
     text = text.strip()
     unordered_match = re.match(r'^[\-\*\•]\s+(.*)', text)
     if unordered_match:
@@ -14,7 +14,7 @@ def is_list_item(text):
     return False, text, None
 
 def get_markdown_heading_level(text):
-    """Determine the heading level of a string (e.g., '### Text' -> 3). Returns 0 if not a heading."""
+    # Determine the heading level of a string (e.g., '### Text' -> 3).
     text = text.strip()
     match = re.match(r'^(#+)\s+', text)
     if match:
@@ -22,7 +22,7 @@ def get_markdown_heading_level(text):
     return 0
 
 def format_bbox(bbox_tuple, page_number):
-    """Convert (x0, y0, x1, y1) to dictionary format."""
+    # Convert (x0, y0, x1, y1) to dictionary format.
     if not bbox_tuple or len(bbox_tuple) < 4:
         return None
     return {
@@ -36,10 +36,8 @@ def format_bbox(bbox_tuple, page_number):
 from collections import Counter
 
 def construct_semantic_tree(document_elements: list) -> dict:
-    """
-    Constructs a hierarchical semantic tree using spatial and font heuristics.
-    """
-    # --- Pass 1: Global Statistics for Generalization ---
+    # Construct a hierarchical semantic tree using spatial and font heuristics.
+    # Pass 1: Global Statistics for Generalization
     text_elements = [el for el in document_elements if not el.get("is_table") and not el.get("is_image")]
     if not text_elements:
         baseline_size = 0
@@ -49,7 +47,7 @@ def construct_semantic_tree(document_elements: list) -> dict:
         size_counts = Counter(all_sizes)
         baseline_size = size_counts.most_common(1)[0][0]
         # Unique sizes larger than baseline, sorted descending
-        large_fonts = sorted([s for s in size_counts.keys() if s > baseline_size], reverse=True)
+        large_fonts = sorted([s for s in size_counts.keys() if s >= baseline_size + 0.5], reverse=True)
 
     root = {
         "type": "root",
@@ -81,6 +79,8 @@ def construct_semantic_tree(document_elements: list) -> dict:
             }
             if node_type == "image":
                 leaf["description"] = block.get("text", "[IMAGE PENDING]")
+                if "base64_image" in block:
+                    leaf["base64_image"] = block["base64_image"]
             else:
                 leaf["html"] = block.get("html", "")
                 leaf["table_data"] = block.get("structured_rows", [])
@@ -103,26 +103,39 @@ def construct_semantic_tree(document_elements: list) -> dict:
 
         heading_level = 0
         
-        # Heuristic A: Font Hierarchy
-        if size in large_fonts:
-            # Map top sizes to levels 1 and 2
-            heading_level = 1 if size == large_fonts[0] else 2
-            
-        # Heuristic B: Pattern Matching
-        for level, regexes in patterns.items():
-            if any(re.match(p, text) for p in regexes):
-                heading_level = max(heading_level, level)
-                break
+        # Clean text for accurate length and pattern matching
+        clean_text = re.sub(r'\*+|<[^>]+>', '', text).strip()
         
-        # Heuristic C: Centering + Bold (Common for Level 1)
-        if is_centered and (size >= baseline_size) and (is_bold or is_upper):
-            heading_level = max(heading_level, 1 if size > baseline_size else 2)
+        # Short headings only; > 150 chars is likely a paragraph.
+        if len(clean_text) < 150 and len(clean_text) > 2:
+            # Ignore bold prefixes (e.g., "**Keywords:** ...")
+            has_bold_prefix_only = text.startswith("**") and not text.endswith("**") and ("**" in text[2:])
+            
+            # Ignore common false positives (Keywords, Abstract)
+            
+            if not has_bold_prefix_only and not is_false_positive:
+                # Heuristic A: Font Hierarchy
+                if size in large_fonts:
+                    # Map top sizes to levels 1 and 2
+                    heading_level = 1 if size == large_fonts[0] else 2
+                    
+                # Heuristic B: Pattern Matching
+                for level, regexes in patterns.items():
+                    if any(re.match(p, clean_text) for p in regexes):
+                        heading_level = max(heading_level, level)
+                        break
+                
+                # Heuristic C: Centering + Bold (Common for Level 1)
+                if is_centered and (size >= baseline_size) and (is_bold or is_upper):
+                    heading_level = max(heading_level, 1 if size > baseline_size else 2)
 
-        # Heuristic D: Baseline Bold (Level 3)
-        if heading_level == 0 and size == baseline_size and is_bold:
-            # Standalone line check: short and no terminal punctuation
-            if len(text) < 120 and not text.endswith(('.', ':', ';', ',')):
-                heading_level = 3
+                # Heuristic D: Baseline Bold (Level 3)
+                if heading_level == 0 and size == baseline_size and is_bold:
+                    # Standalone line check: short and no terminal punctuation
+                    if len(clean_text) < 80 and not clean_text.endswith(('.', ':', ';', ',')):
+                        # If it has multiple commas, it's likely a list/sentence rather than a heading
+                        if clean_text.count(',') <= 1:
+                            heading_level = 3
                 
         if heading_level > 0:
             active_list_stack = []
@@ -185,9 +198,7 @@ def construct_semantic_tree(document_elements: list) -> dict:
     return root
 
 def compress_bboxes(bboxes):
-    """
-    Compresses a list of bounding boxes by merging spatially adjacent ones.
-    """
+    # Compress a list of bounding boxes by merging spatially adjacent ones.
     if not bboxes:
         return []
     
@@ -213,8 +224,7 @@ def compress_bboxes(bboxes):
         for i in range(1, len(page_boxes)):
             box = page_boxes[i]
             
-            # Check if vertically adjacent and horizontally overlapping
-            # Heuristic: within 15 pixels vertically
+            # Merge if vertically adjacent within 15px
             vertical_gap = box["y"] - (current_macro["y"] + current_macro["h"])
             
             # Check for horizontal overlap or close proximity
@@ -245,13 +255,7 @@ def compress_bboxes(bboxes):
     return compressed
 
 def flatten_tree_to_chunks(node, context_dict=None, current_chunk=None, chunks_list=None, target_size=800, max_chars=1400):
-    """
-    Sophisticated flattening:
-    - Merges adjacent elements of same type
-    - Bonds captions to tables/images
-    - Injects hierarchical context into content
-    - Enforces target_size for better RAG granularity
-    """
+    # Flatten tree: merge adjacent same-type elements and inject context.
     if context_dict is None: context_dict = {}
     if chunks_list is None: chunks_list = []
         
@@ -345,16 +349,21 @@ def flatten_tree_to_chunks(node, context_dict=None, current_chunk=None, chunks_l
             current_chunk["type"] = "captioned_image"
             current_chunk["content"] += "\n" + desc
             current_chunk["bboxes"].extend(node.get("bboxes", []))
+            if "base64_image" in node:
+                current_chunk["base64_image"] = node["base64_image"]
             finalize_chunk(current_chunk)
             current_chunk = None
         else:
             finalize_chunk(current_chunk)
-            chunks_list.append({
+            img_chunk = {
                 "type": "image",
                 **context_dict,
                 "content": desc,
                 "bboxes": compress_bboxes(node.get("bboxes", []))
-            })
+            }
+            if "base64_image" in node:
+                img_chunk["base64_image"] = node["base64_image"]
+            chunks_list.append(img_chunk)
             current_chunk = None
 
     # 4. Recurse
