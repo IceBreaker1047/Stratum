@@ -1,6 +1,6 @@
 # Stratum — PDF Parsing API
 
-Stratum is a high-fidelity PDF parsing API designed for ML engineers building RAG pipelines. It extracts structured, semantically-chunked content from complex documents — including multi-column layouts, tables, images, and nested headings — and returns clean, context-aware chunks ready for vector embedding.
+Stratum is a high-fidelity PDF parsing API designed for ML engineers building RAG pipelines. It extracts structured, semantically-chunked content from complex documents — including multi-column layouts, tables, images, and nested headings — and returns clean, context-aware chunks ready for vector embedding, each scored for retrieval quality.
 
 ---
 
@@ -12,6 +12,7 @@ Stratum is a high-fidelity PDF parsing API designed for ML engineers building RA
 - **Image captioning** — On-device ViT-GPT2 model generates captions for embedded images; no external API required
 - **Semantic tree chunking** — Builds a heading hierarchy from font and spatial heuristics, bonds captions to figures/tables, and injects hierarchical context into every chunk
 - **Context injection** — Every chunk carries heading breadcrumbs so retrievers know exactly where in the document a chunk came from
+- **RAG quality scoring** — Each chunk is scored for structural integrity and entity density, giving downstream pipelines a signal to filter or re-rank low-quality chunks before indexing
 - **Unified chunk schema** — All chunk types (text, table, image, caption) share the same output fields
 - **REST API** — FastAPI server with a single `/parse-pdf` endpoint
 
@@ -52,6 +53,12 @@ ImageCaptioner.describe_image()   (called on image chunks)
    placeholder with a real caption generated on-device.
    │
    ▼
+process_chunks_validation()
+   Scores every chunk for RAG quality. Computes structural integrity
+   (bbox overlap + fragmentation) and entity density (proper nouns,
+   acronyms, numerics). Attaches rag_score and rag_metrics to each chunk.
+   │
+   ▼
 Chunks [ ]
 ```
 
@@ -69,7 +76,7 @@ Health check.
 
 ### `POST /parse-pdf`
 
-Upload a PDF and receive structured chunks.
+Upload a PDF and receive structured, scored chunks.
 
 **Request:** `multipart/form-data` with a `file` field containing a `.pdf` file.
 
@@ -91,7 +98,13 @@ Upload a PDF and receive structured chunks.
       "base64_image": null,
       "bboxes": [
         { "page": 14, "x": 72.0, "y": 134.5, "w": 468.0, "h": 48.2 }
-      ]
+      ],
+      "rag_score": 0.742,
+      "rag_metrics": {
+        "score": 0.742,
+        "integrity": 0.95,
+        "density": 0.61
+      }
     },
     {
       "type": "table",
@@ -102,24 +115,40 @@ Upload a PDF and receive structured chunks.
       "table_data": [ [{ "text": "Assets", "rowspan": 1, "colspan": 2 }] ],
       "image_bytes": null,
       "base64_image": null,
-      "bboxes": [{ "page": 38, "x": 72.0, "y": 210.0, "w": 468.0, "h": 320.0 }]
-    },
-    {
-      "type": "image",
-      "h1_context": "Business Overview",
-      "h2_context": "",
-      "content": "[Business Overview] Image Description: A bar chart showing revenue by segment",
-      "html": "",
-      "table_data": [],
-      "image_bytes": "...",
-      "base64_image": null,
-      "bboxes": [{ "page": 5, "x": 72.0, "y": 300.0, "w": 400.0, "h": 250.0 }]
+      "bboxes": [{ "page": 38, "x": 72.0, "y": 210.0, "w": 468.0, "h": 320.0 }],
+      "rag_score": 0.881,
+      "rag_metrics": {
+        "score": 0.881,
+        "integrity": 1.0,
+        "density": 0.80
+      }
     }
   ]
 }
 ```
 
 **Chunk types:** `text`, `table`, `image`, `heading`, `caption`, `captioned_table`, `captioned_image`, `list_item`
+
+---
+
+## RAG Score
+
+Every chunk in the response includes a `rag_score` (0.0–1.0) and a `rag_metrics` breakdown. This score is intended as a pre-indexing quality signal — chunks with low scores may be fragmented, spatially incoherent, or content-sparse.
+
+| Field | Weight | What it measures |
+|---|---|---|
+| `integrity` | 40% | Spatial coherence of the chunk's bounding boxes — penalises bbox overlap and heavy fragmentation (< 30 chars/box) |
+| `density` | 60% | Entity richness of the content — counts proper nouns, acronyms, and numeric values per 100 words, normalised against a baseline of 15 entities/100 words |
+
+```
+rag_score = (integrity × 0.4) + (density × 0.6)
+```
+
+A common use pattern is to filter out chunks below a threshold before sending to your vector store:
+
+```python
+good_chunks = [c for c in chunks if c["rag_score"] >= 0.4]
+```
 
 ---
 
@@ -175,6 +204,7 @@ uvicorn api:app --host 0.0.0.0 --port 7860 --reload
 | `table.py` | `extract_tables()` — rowspan/colspan-aware table parser |
 | `tree.py` | `construct_semantic_tree()`, `flatten_tree_to_chunks()` — semantic chunking pipeline |
 | `captioner.py` | `ImageCaptioner` singleton — on-device ViT-GPT2 image captioning |
+| `scorer.py` | `process_chunks_validation()`, `compute_rag_score()` — RAG quality scoring |
 
 ---
 
