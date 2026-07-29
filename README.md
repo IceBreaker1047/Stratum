@@ -1,6 +1,6 @@
-# Stratum — PDF Parsing API
+# Stratum — FastAPI PDF Parsing API
 
-Stratum is a high-fidelity PDF parsing API designed for ML engineers building RAG pipelines. It extracts structured, semantically-chunked content from complex documents — including multi-column layouts, tables, images, and nested headings — and returns clean, context-aware chunks ready for vector embedding, each scored for retrieval quality.
+Stratum is a high-fidelity FastAPI service designed for ML engineers building RAG pipelines. It extracts structured, semantically-chunked content from complex documents — including multi-column layouts, tables, images, and nested headings — and returns clean, context-aware chunks ready for vector embedding, each scored for retrieval quality.
 
 ---
 
@@ -184,7 +184,7 @@ torchvision
 python api.py
 ```
 
-The server starts at `http://0.0.0.0:7860`.
+The server starts a FastAPI app at `http://0.0.0.0:7860`.
 
 To run with hot reload during development:
 

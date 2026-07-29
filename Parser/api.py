@@ -24,7 +24,9 @@ def health_check():
 async def parse_pdf_endpoint(file: UploadFile = File(...)):
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
-    
+
+    tmp_pdf_path = None
+
     # Save the uploaded file to a temporary location
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
@@ -42,7 +44,7 @@ async def parse_pdf_endpoint(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Pipeline error: {str(e)}")
     finally:
         # Cleanup temporary file
-        if os.path.exists(tmp_pdf_path):
+        if tmp_pdf_path and os.path.exists(tmp_pdf_path):
             os.remove(tmp_pdf_path)
 
 if __name__ == "__main__":
