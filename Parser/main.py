@@ -9,15 +9,13 @@ def process_pdf_to_database(pdf_path:str, output_json_path:str=None):
     print("Step 1: Extracting elements and filtering the bleeds...")
     clean_elements = extract_without_bleeds(pdf_path)
 
-    print("Step 2: Processing images (Multimodal Pass)...")
+    print("Step 2: Processing images skipped (image captioning removed)")
     import base64
-    from image_processor import ImageCaptioner
-    captioner = ImageCaptioner()
+    # Convert raw image bytes to base64 for downstream consumers, but do not run any ML captioning.
     for el in clean_elements:
         if el.get("is_image"):
             image_bytes = el.get("image_bytes")
             if image_bytes:
-                el["text"] = captioner.describe_image(image_bytes)
                 el["base64_image"] = base64.b64encode(image_bytes).decode("utf-8")
             if "image_bytes" in el:
                 del el["image_bytes"]

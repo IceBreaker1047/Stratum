@@ -9,7 +9,6 @@ def create_header_mapping(all_font_sizes: list) -> tuple[dict, float]:
     size_counts = Counter(all_font_sizes)
     baseline_size = size_counts.most_common(1)[0][0]
 
-    # Fix: combine ALL larger sizes and sort descending to assign heading levels.
     larger_sizes = sorted(
         {size for size in all_font_sizes if size > baseline_size},
         reverse=True,
@@ -103,94 +102,53 @@ def get_chunk_type(chunk_text: str) -> str:
 
     return "text"
 
-
-def _make_bbox_dict(bbox: tuple, page: int) -> dict:
-    return {
-        "page": page,
-        "x": round(bbox[0], 2),
-        "y": round(bbox[1], 2),
-        "w": round(bbox[2] - bbox[0], 2),
-        "h": round(bbox[3] - bbox[1], 2),
-    }
-
-
-def _empty_chunk(chunk_type: str, h1: str, h2: str, content: str, bboxes: list) -> dict:
-    # Unified chunk schema for consistency.
-    return {
-        "type": chunk_type,
-        "h1_context": h1,
-        "h2_context": h2,
-        "content": content,
-        "html": "",
-        "table_data": [],
-        "image_bytes": None,
-        "base64_image": None,
-        "bboxes": bboxes,
-    }
-
-
 def markdown_chunk(markdown_blocks: list, max_chars: int, overlap_chars: int) -> list:
     chunks = []
     current_h1 = "Document Start"
     current_h2 = ""
     current_chunk_text = ""
-    current_bboxes = []
 
     def flush_text_chunk():
-        nonlocal current_chunk_text, current_bboxes
+        nonlocal current_chunk_text
         text = current_chunk_text.strip()
         if not text:
             return
-        chunk = _empty_chunk(
-            chunk_type=get_chunk_type(text),  # Get type from raw text
-            h1=current_h1,
-            h2=current_h2,
-            content=f"{current_h1} - {current_h2}\n{text}",
-            bboxes=current_bboxes,
-        )
+        chunk = {
+            "type": get_chunk_type(text),
+            "h1_context": current_h1,
+            "h2_context": current_h2,
+            "content": f"{current_h1} - {current_h2}\n{text}",
+        }
         chunks.append(chunk)
         current_chunk_text = ""
-        current_bboxes = []
 
     for block in markdown_blocks:
         # Table processing
         if block.get("is_table"):
             flush_text_chunk()
-
-            bbox = block.get("bbox", (0, 0, 0, 0))
-            page = block.get("page_number", 0)
             table_text = block.get("text", "")
-
-            chunk = _empty_chunk(
-                chunk_type="table",
-                h1=current_h1,
-                h2=current_h2,
-                content=f"{current_h1} - {current_h2}\n{table_text}",
-                bboxes=[_make_bbox_dict(bbox, page)],
-            )
-            chunk["html"] = block.get("html", "")
-            chunk["table_data"] = block.get("structured_rows", [])
+            chunk = {
+                "type": "table",
+                "h1_context": current_h1,
+                "h2_context": current_h2,
+                "content": f"{current_h1} - {current_h2}\n{table_text}",
+            }
             chunks.append(chunk)
             continue
 
-        # Image processing
         if block.get("is_image"):
             flush_text_chunk()
-
-            bbox = block.get("bbox", (0, 0, 0, 0))
-            page = block.get("page_number", 0)
             img_text = block.get("text", "")
-
-            chunk = _empty_chunk(
-                chunk_type="image",
-                h1=current_h1,
-                h2=current_h2,
-                content=f"{current_h1} - {current_h2}\n{img_text}",
-                bboxes=[_make_bbox_dict(bbox, page)],
-            )
-            chunk["image_bytes"] = block.get("image_bytes")
+            chunk = {
+                "type": "image",
+                "h1_context": current_h1,
+                "h2_context": current_h2,
+                "content": f"{current_h1} - {current_h2}\n{img_text}",
+            }
+            if "image_bytes" in block:
+                chunk["image_bytes"] = block.get("image_bytes")
             if "base64_image" in block:
-                chunk["base64_image"] = block["base64_image"]
+                chunk["base64_image"] = block.get("base64_image")
             chunks.append(chunk)
             continue
 
@@ -198,27 +156,20 @@ def markdown_chunk(markdown_blocks: list, max_chars: int, overlap_chars: int) ->
         para = block.get("text", "").strip()
         if not para:
             continue
-
-        bbox = block.get("bbox", (0, 0, 0, 0))
-        page = block.get("page_number", 0)
-        bbox_dict = _make_bbox_dict(bbox, page)
-
+        
         # Fix: headings update context but aren't written to body text.
         if para.startswith("# "):
             flush_text_chunk()          # section boundary → always flush first
             current_h1 = para[2:].strip()
             current_h2 = ""
-            current_bboxes.append(bbox_dict)
             continue
 
         if para.startswith("## "):
             current_h2 = para[3:].strip()
-            current_bboxes.append(bbox_dict)
             continue
 
         # Para content addition.
         current_chunk_text += f"{para}\n\n"
-        current_bboxes.append(bbox_dict)
 
         if len(current_chunk_text) > max_chars:
             flush_text_chunk()
@@ -233,7 +184,6 @@ def markdown_chunk(markdown_blocks: list, max_chars: int, overlap_chars: int) ->
                 l for l in overlap_raw.split("\n") if not l.strip().startswith("#")
             ]
             current_chunk_text = "..." + "\n".join(overlap_lines).lstrip("\n") + "\n\n"
-            current_bboxes = []
 
     # Flush whatever remains
     flush_text_chunk()

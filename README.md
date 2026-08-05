@@ -1,74 +1,7 @@
-# Stratum — FastAPI PDF Parsing API
+# Stratum — PDF Parsing Pipeline
 
-Stratum is a high-fidelity FastAPI service designed for ML engineers building RAG pipelines. It extracts structured, semantically-chunked content from complex documents — including multi-column layouts, tables, images, and nested headings — and returns clean, context-aware chunks ready for vector embedding, each scored for retrieval quality.
-
+Stratum is a high-fidelity PDF parsing pipeline designed for ML engineers building RAG pipelines. It extracts structured, semantically-chunked content from complex documents — including multi-column layouts, tables, images, and nested headings — and returns clean, context-aware chunks ready for vector embedding.
 ---
-
-## Features
-
-- **Layout-aware extraction** — Detects single vs. multi-column layouts and sorts elements accordingly
-- **Bleed/header filtering** — Automatically detects and strips repeated headers, footers, and page numbers across the document
-- **Table extraction** — Parses tables with rowspan/colspan support; outputs HTML, structured JSON rows, and Markdown
-- **Image captioning** — On-device ViT-GPT2 model generates captions for embedded images; no external API required
-- **Semantic tree chunking** — Builds a heading hierarchy from font and spatial heuristics, bonds captions to figures/tables, and injects hierarchical context into every chunk
-- **Context injection** — Every chunk carries heading breadcrumbs so retrievers know exactly where in the document a chunk came from
-- **RAG quality scoring** — Each chunk is scored for structural integrity and entity density, giving downstream pipelines a signal to filter or re-rank low-quality chunks before indexing
-- **Unified chunk schema** — All chunk types (text, table, image, caption) share the same output fields
-- **REST API** — FastAPI server with a single `/parse-pdf` endpoint
-
----
-
-## Architecture
-
-```
-PDF File
-   │
-   ▼
-extract_without_bleeds()
-   Extracts text lines, images, and tables page-by-page.
-   Pass 1: identifies repeated margin content (headers/footers/page numbers).
-   Pass 2: returns clean elements with bleed content stripped.
-   │
-   ▼
-get_page_elements()
-   Per-page element builder. Detects tables via PyMuPDF, extracts images,
-   annotates text spans with bold/italic/superscript markers, and sorts
-   elements by reading order (column-aware).
-   │
-   ▼
-construct_semantic_tree()
-   Builds a heading hierarchy from font-size heuristics, centering,
-   boldness, and structural patterns (e.g. "1.2 Heading", "A. Section").
-   Outputs a root node with nested heading → paragraph → list_item children.
-   │
-   ▼
-flatten_tree_to_chunks()
-   Walks the tree depth-first. Merges adjacent same-type nodes, bonds
-   captions to the table/image that follows, injects heading breadcrumbs
-   as context prefixes, and enforces a target chunk size.
-   │
-   ▼
-ImageCaptioner.describe_image()   (called on image chunks)
-   Singleton ViT-GPT2 model. Replaces the "[IMAGE MULTIMODAL DESCRIPTION PENDING]"
-   placeholder with a real caption generated on-device.
-   │
-   ▼
-process_chunks_validation()
-   Scores every chunk for RAG quality. Computes structural integrity
-   (bbox overlap + fragmentation) and entity density (proper nouns,
-   acronyms, numerics). Attaches rag_score and rag_metrics to each chunk.
-   │
-   ▼
-Chunks [ ]
-```
-
----
-
-## API
-
-### `GET /`
-
-Health check.
 
 ```json
 { "status": "ok", "message": "PDF Parser API is running." }
@@ -159,38 +92,22 @@ good_chunks = [c for c in chunks if c["rag_score"] >= 0.4]
 ```bash
 git clone https://github.com/your-org/stratum.git
 cd stratum
-pip install -r requirements.txt
-```
-
-**`requirements.txt`**
-```
-fastapi
-uvicorn
-pymupdf
-torch
-transformers
-pillow
-python-multipart
-torchvision
+pip install -r Parser/requirements.txt
 ```
 
 > **Note:** The image captioning model (`nlpconnect/vit-gpt2-image-captioning`) is downloaded automatically from Hugging Face on first run and cached locally. It runs on CPU if no GPU is available, which will be slower on documents with many images.
 
 ---
 
-## Running the Server
+## Running the Pipeline
+
+Run the main pipeline script on a sample PDF:
 
 ```bash
-python api.py
+python Parser/main.py
 ```
 
-The server starts a FastAPI app at `http://0.0.0.0:7860`.
-
-To run with hot reload during development:
-
-```bash
-uvicorn api:app --host 0.0.0.0 --port 7860 --reload
-```
+This runs the `process_pdf_to_database()` pipeline and writes `final_database_chunks.json` by default.
 
 ---
 
@@ -198,7 +115,6 @@ uvicorn api:app --host 0.0.0.0 --port 7860 --reload
 
 | File | Responsibility |
 |---|---|
-| `api.py` | FastAPI app, `/parse-pdf` endpoint, temp file handling |
 | `main.py` | Top-level `process_pdf_to_database()` orchestrator |
 | `extractor.py` | `extract_without_bleeds()`, `get_page_elements()`, layout detection |
 | `table.py` | `extract_tables()` — rowspan/colspan-aware table parser |

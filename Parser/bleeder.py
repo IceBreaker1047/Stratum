@@ -6,7 +6,7 @@ from table import extract_tables
 def detect_multicolumn(doc):
     multicolumn_pages = 0
 
-    for page_idx in range(min(5, len(doc))):  # Fix: avoid shadowing i
+    for page_idx in range(min(5, len(doc))):
         page = doc[page_idx]
         blocks = [b for b in page.get_text("dict", sort=False)["blocks"] if b["type"] == 0]
 
@@ -17,8 +17,8 @@ def detect_multicolumn(doc):
         ]
 
         is_multi = False
-        for bi in range(len(body_blocks)):          # Fix: avoid shadowing i
-            for bj in range(bi + 1, len(body_blocks)):  # Fix: was j
+        for bi in range(len(body_blocks)):
+            for bj in range(bi + 1, len(body_blocks)):
                 b1 = body_blocks[bi]["bbox"]
                 b2 = body_blocks[bj]["bbox"]
 
@@ -68,7 +68,7 @@ def get_page_elements(page, is_multicolumn=False):
                 "page_number": page.number,
                 "page_width": page_width,
                 "x0": bbox[0],
-                "y0": bbox[1],   # Fix: distinct y0/y1 keys
+                "y0": bbox[1],
                 "x1": bbox[2],
                 "y1": bbox[3],
             })
@@ -136,7 +136,7 @@ def get_page_elements(page, is_multicolumn=False):
 
                 line_text += prefix_spaces + formatted_text + suffix_spaces
 
-            line_text = line_text.strip()  # Fix: removed duplicate strip
+            line_text = line_text.strip()
             if line_text:
                 elements.append({
                     "text": line_text,
@@ -147,7 +147,7 @@ def get_page_elements(page, is_multicolumn=False):
                     "page_number": page.number,
                     "page_width": page_width,
                     "x0": line_bbox[0],
-                    "y0": line_bbox[1],  # Fix: no longer duplicates y1
+                    "y0": line_bbox[1],
                     "x1": line_bbox[2],
                     "y1": line_bbox[3],
                 })
@@ -176,52 +176,26 @@ def extract_without_bleeds(pdf_path):
     is_multicolumn = detect_multicolumn(doc)
     print(f"Layout detection: {'Multi-column' if is_multicolumn else 'Single-column'}")
 
-    # Pass 1: Build the Bleed Blacklist
-    margin_text_stats = {}
-    for page in doc:
-        page_height = page.rect.height
-        elements = get_page_elements(page, is_multicolumn)
-
-        for el in elements:
-            if el.get("is_table"):
-                continue
-
-            normalized_text = re.sub(r"\d+", "<NUM>", el["text"]).strip()
-            is_top_margin = el["y1"] < (page_height * 0.12)
-            is_bottom_margin = el["y0"] > (page_height * 0.88)
-
-            if is_top_margin or is_bottom_margin:
-                if normalized_text not in margin_text_stats:
-                    margin_text_stats[normalized_text] = {"count": 0, "pages_seen": set()}
-                if page.number not in margin_text_stats[normalized_text]["pages_seen"]:
-                    margin_text_stats[normalized_text]["count"] += 1
-                    margin_text_stats[normalized_text]["pages_seen"].add(page.number)
-
-    bleed_blacklist = set()
-    for text_key, stats in margin_text_stats.items():
-        if stats["count"] >= frequency_threshold:
-            bleed_blacklist.add(text_key)
-
-    # Pass 2: Extract Clean Data
+    # Single-pass extraction: collect non-margin items immediately, buffer margin candidates
+    margin_word_stats = {}
+    margin_buffer = {}  # normalized_text -> list of (page_number, element)
     document_elements = []
 
-    # Fix: catch common financial PDF page formats like "2 / 10"
-    page_pattern = re.compile(
-        r"^(page\s*)?-?\s*\d+\s*([/of]\s*\d+)?\s*-?$", re.IGNORECASE
-    )
+    # Common page-number patterns to filter later
+    page_pattern = re.compile(r"^(page\s*)?-?\s*\d+\s*([/of]\s*\d+)?\s*-?$", re.IGNORECASE)
+    margin_cutoff = 0.15
 
     for page in doc:
         page_height = page.rect.height
         elements = get_page_elements(page, is_multicolumn)
 
         for el in elements:
+            # Tables and images are preserved immediately
             if el.get("is_table"):
                 document_elements.append({
                     "is_table": True,
-                    "html": el.get("html", ""),
-                    "structured_rows": el.get("structured_rows", []),
-                    "text": el["text"],
-                    "size": el["size"],
+                    "text": el.get("text", ""),
+                    "size": el.get("size", 0),
                     "bbox": el.get("bbox", (0, 0, 0, 0)),
                     "page_number": el.get("page_number", 0),
                     "is_bold": el.get("is_bold", False),
@@ -233,8 +207,8 @@ def extract_without_bleeds(pdf_path):
                 document_elements.append({
                     "is_image": True,
                     "image_bytes": el.get("image_bytes"),
-                    "text": el["text"],
-                    "size": el["size"],
+                    "text": el.get("text", ""),
+                    "size": el.get("size", 0),
                     "bbox": el.get("bbox", (0, 0, 0, 0)),
                     "page_number": el.get("page_number", 0),
                     "is_bold": el.get("is_bold", False),
@@ -242,23 +216,52 @@ def extract_without_bleeds(pdf_path):
                 })
                 continue
 
+            # Text lines: decide whether to buffer (candidate bleed) or keep
             clean_text = el["text"].strip()
             normalized_text = re.sub(r"\d+", "<NUM>", clean_text)
-            is_top_margin = el["y1"] < (page_height * 0.12)
-            is_bottom_margin = el["y0"] > (page_height * 0.88)
+            is_top_margin = el["y1"] < (page_height * margin_cutoff)
+            is_bottom_margin = el["y0"] > (page_height * (1 - margin_cutoff))
 
             if is_top_margin or is_bottom_margin:
-                if normalized_text in bleed_blacklist:
-                    continue
-                if page_pattern.match(clean_text):
-                    continue
+                # Tokenize into words, ignore short tokens
+                words = [w.lower() for w in re.findall(r"\w+", normalized_text) if len(w) > 1]
+                unique_words = set(words)
+                for w in unique_words:
+                    stats = margin_word_stats.setdefault(w, {"count": 0, "pages_seen": set()})
+                    if page.number not in stats["pages_seen"]:
+                        stats["count"] += 1
+                        stats["pages_seen"].add(page.number)
 
+                margin_buffer.setdefault(normalized_text, []).append((page.number, el))
+            else:
+                el_to_add = el.copy()
+                el_to_add["text"] = clean_text
+                document_elements.append(el_to_add)
+
+    # Finalize bleed words and flush buffered margin items that are NOT bleeds
+    bleed_words = {w for w, v in margin_word_stats.items() if v["count"] >= frequency_threshold}
+
+    # Flush buffered margin candidates if they don't match bleed-word ratio or page-number patterns
+    for normalized_text, occurrences in margin_buffer.items():
+        words = [w.lower() for w in re.findall(r"\w+", normalized_text) if len(w) > 1]
+        if not words:
+            # nothing meaningful to keep
+            continue
+        bleed_ratio = sum(1 for w in words if w in bleed_words) / len(words)
+
+        for _page_num, el in occurrences:
+            clean_text = el["text"].strip()
+            if page_pattern.match(clean_text):
+                continue
+            # Drop if majority of words are bleed words
+            if bleed_ratio >= 0.5:
+                continue
             el_to_add = el.copy()
             el_to_add["text"] = clean_text
             document_elements.append(el_to_add)
 
     print(
-        f"Bleeder: Blacklisted {len(bleed_blacklist)} items & filtered page numbers. "
+        f"Bleeder: Blacklisted {len(bleed_words)} words & filtered page numbers. "
         f"Extracted {len(document_elements)} clean blocks."
     )
     return document_elements

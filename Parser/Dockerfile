@@ -23,8 +23,6 @@ RUN pip install --no-cache-dir --upgrade -r requirements.txt
 # Copy the rest of the files
 COPY --chown=user . .
 
-# Hugging Face Spaces listen on port 7860 by default
+# Run the FastAPI app with uvicorn
 EXPOSE 7860
-
-# Run the API on port 7860
 CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "7860"]

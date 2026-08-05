@@ -9,16 +9,17 @@ app = FastAPI(title="PDF Parser API", description="API to parse PDFs into hierar
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
 @app.get("/")
 def health_check():
     return {"status": "ok", "message": "PDF Parser API is running."}
+
 
 @app.post("/parse-pdf")
 async def parse_pdf_endpoint(file: UploadFile = File(...)):
@@ -27,25 +28,22 @@ async def parse_pdf_endpoint(file: UploadFile = File(...)):
 
     tmp_pdf_path = None
 
-    # Save the uploaded file to a temporary location
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
             shutil.copyfileobj(file.file, tmp_file)
             tmp_pdf_path = tmp_file.name
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save uploaded file: {str(e)}")
-    
+
     try:
-        # Run the pipeline
-        # output_json_path is omitted so it returns chunks in memory
         chunks = process_pdf_to_database(tmp_pdf_path)
         return {"filename": file.filename, "chunks_extracted": len(chunks), "chunks": chunks}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Pipeline error: {str(e)}")
     finally:
-        # Cleanup temporary file
         if tmp_pdf_path and os.path.exists(tmp_pdf_path):
             os.remove(tmp_pdf_path)
+
 
 if __name__ == "__main__":
     import uvicorn

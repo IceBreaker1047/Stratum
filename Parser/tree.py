@@ -1,9 +1,11 @@
 from collections import Counter
 
+
 def format_bbox(bbox_tuple, page_number):
-    # Convert a raw bbox tuple into a simple structure for the tree.
+    # Turn a rectangle into a simple dictionary for the tree.
     if not bbox_tuple or len(bbox_tuple) < 4:
         return None
+
     return {
         "page": page_number,
         "x": round(bbox_tuple[0], 2),
@@ -13,9 +15,10 @@ def format_bbox(bbox_tuple, page_number):
     }
 
 
-def construct_semantic_tree(document_elements: list) -> dict:
-    # Build a simple hierarchical tree from the extracted document elements.
+def construct_semantic_tree(document_elements):
+    # Build a simple tree of headings and paragraphs.
     text_elements = [el for el in document_elements if not el.get("is_table") and not el.get("is_image")]
+
     if not text_elements:
         baseline_size = 0
     else:
@@ -24,18 +27,20 @@ def construct_semantic_tree(document_elements: list) -> dict:
         baseline_size = size_counts.most_common(1)[0][0]
 
     root = {"type": "root", "children": []}
-    active_stack = [(0, root)]
+    stack = [(0, root)]
 
     for block in document_elements:
         bbox_dict = format_bbox(block.get("bbox"), block.get("page_number", 0))
         text = block.get("text", "").strip()
+
         if not text:
             continue
 
-        # Tables and images are stored as leaf nodes.
+        # Save tables and images as leaf nodes.
         if block.get("is_image") or block.get("is_table"):
             node_type = "image" if block.get("is_image") else "table"
             leaf = {"type": node_type, "bboxes": [bbox_dict] if bbox_dict else []}
+
             if node_type == "image":
                 leaf["description"] = block.get("text", "[IMAGE PENDING]")
                 if "base64_image" in block:
@@ -43,12 +48,14 @@ def construct_semantic_tree(document_elements: list) -> dict:
             else:
                 leaf["html"] = block.get("html", "")
                 leaf["table_data"] = block.get("structured_rows", [])
-            active_stack[-1][1]["children"].append(leaf)
+
+            stack[-1][1]["children"].append(leaf)
             continue
 
-        # Headings are classified by relative font size.
+        # Use font size to decide if a block is a heading.
         size = block.get("size", 0)
         heading_level = 0
+
         if baseline_size > 0 and size > baseline_size:
             if size >= baseline_size + 1.5:
                 heading_level = 1
@@ -63,67 +70,71 @@ def construct_semantic_tree(document_elements: list) -> dict:
                 "bboxes": [bbox_dict] if bbox_dict else [],
                 "children": [],
             }
-            while active_stack and active_stack[-1][0] >= heading_level:
-                active_stack.pop()
-            active_stack[-1][1]["children"].append(new_node)
-            active_stack.append((heading_level, new_node))
+
+            while stack and stack[-1][0] >= heading_level:
+                stack.pop()
+
+            stack[-1][1]["children"].append(new_node)
+            stack.append((heading_level, new_node))
             continue
 
-        # Everything else becomes a simple paragraph node.
+        # Everything else is a simple paragraph.
         leaf = {"type": "paragraph", "text": text, "bboxes": [bbox_dict] if bbox_dict else []}
-        active_stack[-1][1]["children"].append(leaf)
+        stack[-1][1]["children"].append(leaf)
 
     return root
 
 
 def compress_bboxes(bboxes):
-    # Merge nearby boxes so the chunk metadata is compact.
+    # Merge nearby boxes so chunk metadata stays short.
     if not bboxes:
         return []
 
     pages = {}
     for box in bboxes:
-        p = box.get("page")
-        if p not in pages:
-            pages[p] = []
-        pages[p].append(box)
+        page = box.get("page")
+        if page not in pages:
+            pages[page] = []
+        pages[page].append(box)
 
     compressed = []
-    for p in sorted(pages.keys(), key=lambda x: (x if x is not None else -1)):
-        page_boxes = pages[p]
+
+    for page in sorted(pages.keys(), key=lambda x: (x if x is not None else -1)):
+        page_boxes = pages[page]
         if not page_boxes:
             continue
+
         page_boxes.sort(key=lambda b: (b["y"], b["x"]))
-        current_macro = page_boxes[0].copy()
+        current_box = page_boxes[0].copy()
 
         for i in range(1, len(page_boxes)):
             box = page_boxes[i]
-            vertical_gap = box["y"] - (current_macro["y"] + current_macro["h"])
-            curr_right = current_macro["x"] + current_macro["w"]
+            vertical_gap = box["y"] - (current_box["y"] + current_box["h"])
+            curr_right = current_box["x"] + current_box["w"]
             box_right = box["x"] + box["w"]
-            is_horizontally_aligned = max(current_macro["x"], box["x"]) < min(curr_right, box_right) + 20
+            is_aligned = max(current_box["x"], box["x"]) < min(curr_right, box_right) + 20
 
-            if vertical_gap < 15 and is_horizontally_aligned:
-                new_x = min(current_macro["x"], box["x"])
-                new_y = min(current_macro["y"], box["y"])
+            if vertical_gap < 15 and is_aligned:
+                new_x = min(current_box["x"], box["x"])
+                new_y = min(current_box["y"], box["y"])
                 new_w = max(curr_right, box_right) - new_x
-                new_h = max(current_macro["y"] + current_macro["h"], box["y"] + box["h"]) - new_y
+                new_h = max(current_box["y"] + current_box["h"], box["y"] + box["h"]) - new_y
 
-                current_macro["x"] = round(new_x, 2)
-                current_macro["y"] = round(new_y, 2)
-                current_macro["w"] = round(new_w, 2)
-                current_macro["h"] = round(new_h, 2)
+                current_box["x"] = round(new_x, 2)
+                current_box["y"] = round(new_y, 2)
+                current_box["w"] = round(new_w, 2)
+                current_box["h"] = round(new_h, 2)
             else:
-                compressed.append(current_macro)
-                current_macro = box.copy()
+                compressed.append(current_box)
+                current_box = box.copy()
 
-        compressed.append(current_macro)
+        compressed.append(current_box)
 
     return compressed
 
 
 def flatten_tree_to_chunks(node, context_dict=None, current_chunk=None, chunks_list=None, target_size=800, max_chars=1400):
-    # Flatten the tree into chunks while preserving the current heading context.
+    # Walk the tree and make chunks while keeping heading context.
     if context_dict is None:
         context_dict = {}
     if chunks_list is None:
@@ -139,13 +150,16 @@ def flatten_tree_to_chunks(node, context_dict=None, current_chunk=None, chunks_l
         context_dict[f"h{level}_context"] = node.get("text", "")
 
     def finalize_chunk(chunk):
-        # Add heading context to the chunk before it is stored.
+        # Add the current heading text to the chunk content.
         if not chunk or not chunk.get("content", "").strip():
             return
+
         ctx_list = [context_dict[f"h{i}_context"] for i in range(1, 4) if f"h{i}_context" in context_dict]
         prefix = f"[{' > '.join(ctx_list)}] " if ctx_list else ""
+
         if not chunk["content"].startswith("["):
             chunk["content"] = prefix + chunk["content"]
+
         chunk["bboxes"] = compress_bboxes(chunk["bboxes"])
         chunks_list.append(chunk)
 
@@ -190,12 +204,13 @@ def flatten_tree_to_chunks(node, context_dict=None, current_chunk=None, chunks_l
             "content": f"Image Description: {node.get('description', '')}",
             "bboxes": compress_bboxes(node.get("bboxes", [])),
         }
+
         if "base64_image" in node:
             img_chunk["base64_image"] = node["base64_image"]
+
         chunks_list.append(img_chunk)
         current_chunk = None
 
-    # Recurse through children to preserve the hierarchy.
     for child in node.get("children", []):
         current_chunk = flatten_tree_to_chunks(child, context_dict.copy(), current_chunk, chunks_list, target_size, max_chars)
 

@@ -1,8 +1,4 @@
+pymupdf
 fastapi
 uvicorn
-pymupdf
-torch
-transformers
-pillow
 python-multipart
-torchvision

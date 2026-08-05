@@ -20,15 +20,10 @@ def extract_tables(page, page_number=None):
         num_cols = len(extracted_data[0]) if num_rows > 0 else 0
         
         covered = set()
-        structured_rows = []
-        html = "<table>\n"
-        
         # We still need a plain text representation for basic fallback, but we'll focus on JSON
         md_table = "\n"
 
         for r in range(num_rows):
-            json_row = []
-            html += "  <tr>\n"
             md_row = []
             
             for c in range(num_cols):
@@ -66,31 +61,15 @@ def extract_tables(page, page_number=None):
                 if text.lower() == "none":
                     text = ""
                 
-                json_row.append({
-                    "text": text,
-                    "rowspan": h,
-                    "colspan": w
-                })
-                
                 md_row.append(text)
                 
                 tag = "th" if r == 0 else "td"
-                attrs = []
-                if h > 1: attrs.append(f'rowspan="{h}"')
-                if w > 1: attrs.append(f'colspan="{w}"')
-                attr_str = " " + " ".join(attrs) if attrs else ""
-                html += f"    <{tag}{attr_str}>{text}</{tag}>\n"
                 
-            structured_rows.append(json_row)
-            html += "  </tr>\n"
+            
             md_table += "| " + " | ".join(md_row) + " |\n"
             
-        html += "</table>\n"
-
         table_elements.append({
             "text": md_table + "\n",
-            "html": html,
-            "structured_rows": structured_rows,
             "size": 0,
             "bbox": table.bbox,
             "is_table": True,
