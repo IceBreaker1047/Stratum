@@ -1,76 +1,16 @@
 # Stratum — PDF Parsing Pipeline
 
-Stratum is a high-fidelity PDF parsing pipeline designed for ML engineers building RAG pipelines. It extracts structured, semantically-chunked content from complex documents — including multi-column layouts, tables, images, and nested headings — and returns clean, context-aware chunks ready for vector embedding.
----
-
-```json
-{ "status": "ok", "message": "PDF Parser API is running." }
-```
-
-### `POST /parse-pdf`
-
-Upload a PDF and receive structured, scored chunks.
-
-**Request:** `multipart/form-data` with a `file` field containing a `.pdf` file.
-
-**Response:**
-
-```json
-{
-  "filename": "apple_10k.pdf",
-  "chunks_extracted": 312,
-  "chunks": [
-    {
-      "type": "text",
-      "h1_context": "Risk Factors",
-      "h2_context": "Macroeconomic Conditions",
-      "content": "[Risk Factors > Macroeconomic Conditions] The Company's operations are exposed to...",
-      "html": "",
-      "table_data": [],
-      "image_bytes": null,
-      "base64_image": null,
-      "bboxes": [
-        { "page": 14, "x": 72.0, "y": 134.5, "w": 468.0, "h": 48.2 }
-      ],
-      "rag_score": 0.742,
-      "rag_metrics": {
-        "score": 0.742,
-        "integrity": 0.95,
-        "density": 0.61
-      }
-    },
-    {
-      "type": "table",
-      "h1_context": "Financial Statements",
-      "h2_context": "Consolidated Balance Sheet",
-      "content": "[Financial Statements > Consolidated Balance Sheet] ...",
-      "html": "<table><tr><th>Assets</th>...</tr></table>",
-      "table_data": [ [{ "text": "Assets", "rowspan": 1, "colspan": 2 }] ],
-      "image_bytes": null,
-      "base64_image": null,
-      "bboxes": [{ "page": 38, "x": 72.0, "y": 210.0, "w": 468.0, "h": 320.0 }],
-      "rag_score": 0.881,
-      "rag_metrics": {
-        "score": 0.881,
-        "integrity": 1.0,
-        "density": 0.80
-      }
-    }
-  ]
-}
-```
-
-**Chunk types:** `text`, `table`, `image`, `heading`, `caption`, `captioned_table`, `captioned_image`, `list_item`
+Stratum is a PDF parsing pipeline that extracts structured, semantically chunked content from complex documents and prepares it for downstream retrieval or embedding. The current pipeline is file-based and runs end to end from a local script.
 
 ---
 
 ## RAG Score
 
-Every chunk in the response includes a `rag_score` (0.0–1.0) and a `rag_metrics` breakdown. This score is intended as a pre-indexing quality signal — chunks with low scores may be fragmented, spatially incoherent, or content-sparse.
+Every chunk in the final JSON includes a `rag_score` (0.0–1.0) and a `rag_metrics` breakdown. This score is intended as a pre-indexing quality signal — chunks with low scores may be short, fragmented, or content-sparse.
 
 | Field | Weight | What it measures |
 |---|---|---|
-| `integrity` | 40% | Spatial coherence of the chunk's bounding boxes — penalises bbox overlap and heavy fragmentation (< 30 chars/box) |
+| `integrity` | 40% | A lightweight text-length heuristic used to down-weight very short chunks |
 | `density` | 60% | Entity richness of the content — counts proper nouns, acronyms, and numeric values per 100 words, normalised against a baseline of 15 entities/100 words |
 
 ```
@@ -95,19 +35,40 @@ cd stratum
 pip install -r Parser/requirements.txt
 ```
 
-> **Note:** The image captioning model (`nlpconnect/vit-gpt2-image-captioning`) is downloaded automatically from Hugging Face on first run and cached locally. It runs on CPU if no GPU is available, which will be slower on documents with many images.
+> **Note:** The pipeline only depends on the parsing and scoring code in `Parser/`; there is no separate image-captioning model download in the current version.
 
 ---
 
 ## Running the Pipeline
 
-Run the main pipeline script on a sample PDF:
+Run the main pipeline script on the bundled sample PDF:
 
 ```bash
 python Parser/main.py
 ```
 
-This runs the `process_pdf_to_database()` pipeline and writes `final_database_chunks.json` by default.
+This runs `process_pdf_to_database()` and writes `final_database_chunks.json` by default.
+
+### Pipeline Stages
+
+1. `extract_without_bleeds()` removes repeated headers, footers, and page artifacts.
+2. `construct_semantic_tree()` builds a hierarchical tree of headings, paragraphs, tables, and images.
+3. `flatten_tree_to_chunks()` converts the tree into linear chunks while preserving heading context.
+4. `process_chunks_validation()` adds `rag_score` and `rag_metrics` to each chunk.
+
+### Output Shape
+
+The final JSON contains a list of chunks with fields such as:
+
+- `type`
+- `h1_context`, `h2_context`, `h3_context`
+- `content`
+- `html` and `table_data` for table chunks
+- `base64_image` for image chunks when available
+- `rag_score`
+- `rag_metrics`
+
+The pipeline no longer emits `bboxes` or `page`, and chunk `content` is normalized so it does not carry embedded newline markers.
 
 ---
 
@@ -115,12 +76,11 @@ This runs the `process_pdf_to_database()` pipeline and writes `final_database_ch
 
 | File | Responsibility |
 |---|---|
-| `main.py` | Top-level `process_pdf_to_database()` orchestrator |
-| `extractor.py` | `extract_without_bleeds()`, `get_page_elements()`, layout detection |
-| `table.py` | `extract_tables()` — rowspan/colspan-aware table parser |
-| `tree.py` | `construct_semantic_tree()`, `flatten_tree_to_chunks()` — semantic chunking pipeline |
-| `captioner.py` | `ImageCaptioner` singleton — on-device ViT-GPT2 image captioning |
-| `scorer.py` | `process_chunks_validation()`, `compute_rag_score()` — RAG quality scoring |
+| `Parser/main.py` | Top-level `process_pdf_to_database()` orchestrator and JSON writer |
+| `Parser/bleeder.py` | `extract_without_bleeds()` for layout extraction and bleed filtering |
+| `Parser/table.py` | Table extraction and structured row parsing |
+| `Parser/tree.py` | `construct_semantic_tree()` and `flatten_tree_to_chunks()` |
+| `Parser/validation.py` | `process_chunks_validation()` and RAG scoring helpers |
 
 ---
 
@@ -143,13 +103,13 @@ The semantic tree uses four layered heuristics to assign heading levels:
 
 `None` values in PyMuPDF's `table.extract()` output signal merged cells. The extractor walks right (colspan) and down (rowspan) from each non-`None` anchor cell, marks covered positions, and emits the correct `rowspan`/`colspan` attributes in both the HTML and structured JSON outputs.
 
-**Image captioning**
+**Image handling**
 
-`ImageCaptioner` is implemented as a singleton to avoid reloading the ViT-GPT2 weights on every request. The model runs inference at `float32` for broad hardware compatibility. Captions are capped at 20 tokens with beam search (`num_beams=4`). If the model fails to load or inference errors, a descriptive fallback string is returned rather than crashing the parse.
+Image chunks are preserved with their description text and any available `base64_image` payload. The pipeline does not attach generated captions or extra image-model metadata.
 
-**Caption bonding**
+**Chunk normalization**
 
-When a `caption` node (text starting with `Fig.`, `Figure`, `Table`, or `Chart`) immediately precedes a `table` or `image` node in the tree, `flatten_tree_to_chunks` merges them into a single `captioned_table` or `captioned_image` chunk. This keeps the label and its content together in the vector store rather than splitting them into separate retrievable units.
+The flattening step normalizes chunk text so the final output stays single-line and consistent. This keeps the serialized JSON compact and avoids embedding newline markers in the stored content.
 
 ---
 

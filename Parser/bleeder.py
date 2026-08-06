@@ -44,36 +44,9 @@ def get_page_elements(page, is_multicolumn=False):
     tables = extract_tables(page, page_number=page.number)
     elements.extend(tables)
 
-    page_dict = page.get_text("dict", flags=pymupdf.TEXT_PRESERVE_IMAGES)
+    page_dict = page.get_text("dict")
 
     for block in page_dict["blocks"]:
-        if block["type"] == 1:
-            img_bytes = block.get("image")
-            if not img_bytes:
-                try:
-                    pix = page.get_pixmap(clip=block["bbox"], matrix=pymupdf.Matrix(2, 2))
-                    img_bytes = pix.tobytes("png")
-                except Exception:
-                    img_bytes = None
-
-            bbox = block["bbox"]
-            elements.append({
-                "is_image": True,
-                "image_bytes": img_bytes,
-                "text": "[IMAGE MULTIMODAL DESCRIPTION PENDING]",
-                "size": 0,
-                "is_bold": False,
-                "is_upper": False,
-                "bbox": (bbox[0], bbox[1], bbox[2], bbox[3]),
-                "page_number": page.number,
-                "page_width": page_width,
-                "x0": bbox[0],
-                "y0": bbox[1],
-                "x1": bbox[2],
-                "y1": bbox[3],
-            })
-            continue
-
         if block["type"] != 0:
             continue
 
@@ -97,59 +70,32 @@ def get_page_elements(page, is_multicolumn=False):
 
             line_text = ""
             max_font_size = 0
-            is_bold = False
 
             for span in line["spans"]:
                 text = span["text"]
                 if not text.strip():
                     line_text += text
-                    continue
 
                 font_size = round(span["size"], 1)
                 if font_size > max_font_size:
                     max_font_size = font_size
 
-                font_name = span.get("font", "").lower()
-                span_is_bold = (span["flags"] & 16) or "bold" in font_name or "heavy" in font_name
-                span_is_italic = (span["flags"] & 2) or "italic" in font_name or "oblique" in font_name
-                span_is_super = (span["flags"] & 1) or "sup" in font_name
-
-                if (
-                    not span_is_super
-                    and font_size < (max_font_size * 0.85)
-                    and span["bbox"][1] < line["bbox"][1] + (line["bbox"][3] - line["bbox"][1]) * 0.3
-                ):
-                    span_is_super = True
-
-                stripped_text = text.strip()
-                prefix_spaces = text[: len(text) - len(text.lstrip())]
-                suffix_spaces = text[len(text.rstrip()):]
-
-                formatted_text = stripped_text
-                if span_is_bold:
-                    formatted_text = f"**{formatted_text}**"
-                    is_bold = True
-                if span_is_italic:
-                    formatted_text = f"*{formatted_text}*"
-                if span_is_super:
-                    formatted_text = f"<sup>{formatted_text}</sup>"
-
-                line_text += prefix_spaces + formatted_text + suffix_spaces
+                line_text += text
 
             line_text = line_text.strip()
             if line_text:
+                bbox = block["bbox"]
                 elements.append({
                     "text": line_text,
                     "size": max_font_size,
-                    "is_bold": is_bold,
                     "is_upper": line_text.isupper() and len(line_text) > 4,
-                    "bbox": (line_bbox[0], line_bbox[1], line_bbox[2], line_bbox[3]),
+                    "bbox": (bbox[0], bbox[1], bbox[2], bbox[3]),
+                    "x0": bbox[0],
+                    "y0": bbox[1],
+                    "x1": bbox[2],
+                    "y1": bbox[3],
                     "page_number": page.number,
                     "page_width": page_width,
-                    "x0": line_bbox[0],
-                    "y0": line_bbox[1],
-                    "x1": line_bbox[2],
-                    "y1": line_bbox[3],
                 })
 
     if not is_multicolumn:
@@ -190,7 +136,7 @@ def extract_without_bleeds(pdf_path):
         elements = get_page_elements(page, is_multicolumn)
 
         for el in elements:
-            # Tables and images are preserved immediately
+            # Tables are preserved immediately
             if el.get("is_table"):
                 document_elements.append({
                     "is_table": True,
@@ -198,20 +144,6 @@ def extract_without_bleeds(pdf_path):
                     "size": el.get("size", 0),
                     "bbox": el.get("bbox", (0, 0, 0, 0)),
                     "page_number": el.get("page_number", 0),
-                    "is_bold": el.get("is_bold", False),
-                    "is_upper": el.get("is_upper", False),
-                })
-                continue
-
-            if el.get("is_image"):
-                document_elements.append({
-                    "is_image": True,
-                    "image_bytes": el.get("image_bytes"),
-                    "text": el.get("text", ""),
-                    "size": el.get("size", 0),
-                    "bbox": el.get("bbox", (0, 0, 0, 0)),
-                    "page_number": el.get("page_number", 0),
-                    "is_bold": el.get("is_bold", False),
                     "is_upper": el.get("is_upper", False),
                 })
                 continue
